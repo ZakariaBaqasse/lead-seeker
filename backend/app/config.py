@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,6 +11,7 @@ class Settings(BaseSettings):
     API_SECRET_KEY: str
     PIPELINE_SCHEDULE_HOUR: int = 6
     PIPELINE_SCHEDULE_MINUTE: int = 0
+    GNEWS_API_KEY: Optional[str] = None
 
 
 settings = Settings()
