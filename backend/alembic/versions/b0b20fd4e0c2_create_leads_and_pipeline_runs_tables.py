@@ -42,11 +42,11 @@ def upgrade() -> None:
         sa.Column("email_draft", sa.Text, nullable=True),
         sa.Column("notes", sa.Text, nullable=True),
         sa.Column("sent_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
     )
     op.create_index("idx_leads_status", "leads", ["status"])
-    op.create_index("idx_leads_created_at", "leads", ["created_at"])
+    op.create_index("idx_leads_created_at", "leads", ["created_at"], postgresql_ops={"created_at": "DESC NULLS LAST"})
     op.create_index(
         "idx_leads_domain",
         "leads",

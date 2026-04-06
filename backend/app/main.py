@@ -3,7 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import leads, pipeline, stats
+from app.api import leads, stats
+from app.api.pipeline import pipeline_router, profile_router
 from app.config import settings
 
 
@@ -30,7 +31,8 @@ if "localhost" in settings.DATABASE_URL:
 
 app.include_router(leads.router)
 app.include_router(stats.router)
-app.include_router(pipeline.router)
+app.include_router(pipeline_router, prefix="/api")
+app.include_router(profile_router, prefix="/api")
 
 
 @app.get("/health", tags=["health"])

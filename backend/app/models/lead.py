@@ -39,6 +39,7 @@ class Lead(Base):
 
     __table_args__ = (
         Index("idx_leads_status", "status"),
+        # DESC direction enforced in the Alembic migration (postgresql_ops)
         Index("idx_leads_created_at", "created_at"),
         # Partial unique index on company_domain handled in Alembic migration:
         # op.create_index("idx_leads_domain", "leads", ["company_domain"],
