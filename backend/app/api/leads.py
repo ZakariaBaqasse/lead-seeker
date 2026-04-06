@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth import verify_api_key
 from app.db import get_db
 from app.models.lead import Lead
+from app.pipeline.drafter import draft_email
+from app.profile import get_profile
 from app.schemas.lead import LeadListResponse, LeadOut, LeadStatus, LeadUpdate
 
 router = APIRouter(prefix="/api/leads", tags=["leads"], dependencies=[Depends(verify_api_key)])
@@ -104,4 +106,30 @@ async def delete_lead(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     return Response(status_code=204)
 
 
-# TODO: Phase 7 - regenerate endpoint
+@router.post("/{lead_id}/regenerate")
+async def regenerate_email(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Lead).where(Lead.id == lead_id))
+    lead = result.scalar_one_or_none()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+
+    profile = get_profile()
+    lead_data = {
+        "company_name": lead.company_name,
+        "company_description": lead.company_description,
+        "summary": lead.company_description,
+        "funding_amount": lead.funding_amount,
+        "funding_round": lead.funding_round,
+        "funding_date": lead.funding_date,
+        "country": lead.country,
+        "region": lead.region,
+    }
+    draft = await draft_email(lead_data, profile)
+    if draft is None:
+        raise HTTPException(status_code=502, detail="Email drafting failed, please try again")
+
+    lead.email_draft = draft
+    lead.updated_at = datetime.now(timezone.utc)
+    await db.flush()
+    await db.refresh(lead)
+    return {"email_draft": draft}
