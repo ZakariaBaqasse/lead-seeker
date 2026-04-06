@@ -1,6 +1,9 @@
 import logging
 from contextlib import asynccontextmanager
 
+from app.logging_config import configure_logging
+configure_logging()
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI
