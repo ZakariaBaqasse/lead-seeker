@@ -1,6 +1,10 @@
 import logging
 from contextlib import asynccontextmanager
 
+from app.logging_config import configure_logging
+
+configure_logging()
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
