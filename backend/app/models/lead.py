@@ -20,7 +20,7 @@ class Lead(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), server_default=text("gen_random_uuid()"), primary_key=True
+        UUID(as_uuid=True), default=uuid.uuid4, server_default=text("gen_random_uuid()"), primary_key=True
     )
     company_name: Mapped[str] = mapped_column(String(255), nullable=False)
     company_domain: Mapped[str | None] = mapped_column(String(255), nullable=True)
