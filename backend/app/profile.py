@@ -27,7 +27,10 @@ def get_profile() -> dict:
     if not PROFILE_PATH.exists():
         raise ValueError(f"profile.yaml not found at {PROFILE_PATH}")
     with open(PROFILE_PATH) as f:
-        data = yaml.safe_load(f)
+        try:
+            data = yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise ValueError(f"profile.yaml is not valid YAML: {e}") from e
     if not isinstance(data, dict):
         raise ValueError("profile.yaml must be a YAML mapping")
     _validate_profile(data)
