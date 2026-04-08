@@ -41,9 +41,13 @@ async def fetch_yc_directory() -> list[RawArticle]:
                 industries = hit.get("industries", [])
                 if not name or not url:
                     continue
-                # Only include AI-related companies
-                industry_str = " ".join(industries).lower()
-                if "artificial intelligence" not in industry_str and "ai" not in industry_str:
+                # Only include AI-related companies — check per-item to avoid substring false positives
+                # e.g. "ai" in "retail" is True on concatenated string
+                industry_lower = [i.lower() for i in industries]
+                if not any(
+                    "artificial intelligence" in i or i == "ai" or "generative ai" in i
+                    for i in industry_lower
+                ):
                     continue
                 articles.append(RawArticle(
                     headline=f"{name}: {one_liner}",
