@@ -41,3 +41,12 @@ async def list_leads(
     leads = result.scalars().all()
 
     return LeadListResponse(items=leads, total=total)
+
+
+@router.get("/leads/{lead_id}", response_model=LeadOut)
+async def get_lead(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Lead).where(Lead.id == lead_id))
+    lead = result.scalar_one_or_none()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    return lead
