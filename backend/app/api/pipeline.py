@@ -1,8 +1,14 @@
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
+from app.db import get_db
 from app.profile import get_profile
+from app.pipeline.runner import run_pipeline
+from app.models.pipeline_run import PipelineRun
+from app.schemas.pipeline import PipelineRunOut
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["pipeline"])
@@ -16,3 +22,27 @@ async def reload_profile():
         return {"status": "ok", "name": profile.get("name"), "projects_count": len(profile.get("projects", []))}
     except ValueError as e:
         return {"status": "error", "detail": str(e)}
+
+
+@router.post("/pipeline/run", response_model=PipelineRunOut)
+async def trigger_pipeline(db: AsyncSession = Depends(get_db)):
+    """Manually trigger the lead discovery pipeline.
+
+    This endpoint is synchronous — it waits for the full pipeline to complete
+    before returning (expected duration: < 2 minutes).
+    Callers must set HTTP timeout >= 120 seconds.
+    """
+    pipeline_run = await run_pipeline(db)
+    return pipeline_run
+
+
+@router.get("/pipeline/status", response_model=PipelineRunOut)
+async def get_pipeline_status(db: AsyncSession = Depends(get_db)):
+    """Get the most recent pipeline run metadata."""
+    result = await db.execute(
+        select(PipelineRun).order_by(PipelineRun.started_at.desc()).limit(1)
+    )
+    run = result.scalar_one_or_none()
+    if not run:
+        raise HTTPException(status_code=404, detail="No pipeline runs found")
+    return run
