@@ -85,8 +85,8 @@ async def is_duplicate(session: AsyncSession, extraction: ExtractionResult) -> b
             logger.debug("Duplicate (domain match): %s", extraction.company_domain)
             return True
 
-    # Name-based fallback: case-insensitive match
-    if extraction.company_name:
+    # Name-based fallback: only when extraction has no domain to match on
+    if extraction.company_name and not extraction.company_domain:
         result = await session.execute(
             select(Lead.id)
             .where(func.lower(Lead.company_name) == extraction.company_name.lower())

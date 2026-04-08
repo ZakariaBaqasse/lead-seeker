@@ -113,3 +113,13 @@ async def test_is_duplicate_null_domain_different_name(db_session):
 
     extraction = valid_extraction(company_name="TestAI", company_domain=None)
     assert await is_duplicate(db_session, extraction) is False
+
+
+async def test_is_duplicate_domain_present_name_match_not_duplicate(db_session):
+    """Name fallback must NOT fire when extraction has a domain (different from stored one)."""
+    lead = Lead(company_name="TestAI", company_domain="old-testai.com", status="draft")
+    db_session.add(lead)
+    await db_session.commit()
+
+    extraction = valid_extraction(company_name="TestAI", company_domain="new-testai.com")
+    assert await is_duplicate(db_session, extraction) is False
