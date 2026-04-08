@@ -52,10 +52,13 @@ async def draft_email(lead_data: dict, profile: dict) -> str | None:
     """
     try:
         profile_yaml_text = yaml.dump(profile, default_flow_style=False, allow_unicode=True)
+        # Escape any literal braces in the YAML dump so str.format() doesn't
+        # choke on profile content like "Uses {transformer} architecture"
+        profile_yaml_text_safe = profile_yaml_text.replace("{", "{{").replace("}", "}}")
         prompt = DRAFTING_PROMPT.format(
             name=profile.get("name", ""),
             title=profile.get("title", ""),
-            profile_yaml_as_text=profile_yaml_text,
+            profile_yaml_as_text=profile_yaml_text_safe,
             company_name=lead_data.get("company_name", ""),
             summary=lead_data.get("company_description") or lead_data.get("summary", ""),
             funding_amount=lead_data.get("funding_amount", ""),
