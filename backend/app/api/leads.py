@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
 from app.models.lead import Lead
+from app.pipeline.drafter import draft_email
+from app.profile import get_profile
 from app.schemas.lead import LeadListResponse, LeadOut, LeadStatus, LeadUpdate
 
 router = APIRouter(tags=["leads"])
@@ -85,3 +87,30 @@ async def delete_lead(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     await db.delete(lead)
     await db.commit()
     return Response(status_code=204)
+
+
+@router.post("/leads/{lead_id}/regenerate")
+async def regenerate_email(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Lead).where(Lead.id == lead_id))
+    lead = result.scalar_one_or_none()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+
+    profile = get_profile()
+    lead_data = {
+        "company_name": lead.company_name,
+        "company_description": lead.company_description,
+        "funding_amount": lead.funding_amount,
+        "funding_round": lead.funding_round,
+        "funding_date": lead.funding_date,
+        "country": lead.country,
+        "region": lead.region,
+    }
+    email_draft = await draft_email(lead_data, profile)
+
+    lead.email_draft = email_draft
+    lead.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(lead)
+
+    return {"email_draft": email_draft}
