@@ -1,11 +1,11 @@
-node_modules
+**/node_modules
 
 # Output
 .output
 .vercel
 .netlify
 .wrangler
-/.svelte-kit
+**/.svelte-kit
 /build
 
 # OS
@@ -13,11 +13,15 @@ node_modules
 Thumbs.db
 
 # Env
-.env
-.env.*
+**/.env
+**/.env.*
 !.env.example
 !.env.test
 
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+
+**/__pycache__/
+*.pyc
