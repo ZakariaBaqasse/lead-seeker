@@ -152,7 +152,7 @@ async def run_pipeline(session: AsyncSession) -> PipelineRun:
         logger.error("Pipeline crashed: %s", pipeline_error, exc_info=True)
         errors.append({"pipeline": "fatal", "error": str(pipeline_error)})
         pipeline_run_status = "failed"
-        raise
+        # No raise — finally commits status="failed" and the return below sends PipelineRunOut
     else:
         pipeline_run_status = "completed"
     finally:

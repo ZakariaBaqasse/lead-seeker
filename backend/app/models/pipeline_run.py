@@ -19,5 +19,5 @@ class PipelineRun(Base):
     articles_fetched: Mapped[int] = mapped_column(Integer, default=0)
     articles_processed: Mapped[int] = mapped_column(Integer, default=0)
     leads_created: Mapped[int] = mapped_column(Integer, default=0)
-    errors: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    errors: Mapped[list | None] = mapped_column(JSON, nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="running")
