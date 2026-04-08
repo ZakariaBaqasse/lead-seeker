@@ -74,3 +74,14 @@ async def update_lead(lead_id: uuid.UUID, data: LeadUpdate, db: AsyncSession = D
     await db.commit()
     await db.refresh(lead)
     return lead
+
+
+@router.delete("/leads/{lead_id}", status_code=204)
+async def delete_lead(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Lead).where(Lead.id == lead_id))
+    lead = result.scalar_one_or_none()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    await db.delete(lead)
+    await db.commit()
+    return Response(status_code=204)
