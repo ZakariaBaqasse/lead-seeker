@@ -47,33 +47,17 @@ class LeadUpdate(BaseModel):
     notes: Optional[str] = None
     status: Optional[LeadStatus] = None
 
+    @field_validator("status", mode="before")
+    @classmethod
+    def status_not_null(cls, v):
+        if v is None:
+            raise ValueError("status cannot be null; omit the field to leave it unchanged")
+        return v
+
 
 class LeadListResponse(BaseModel):
     items: list[LeadOut]
     total: int
-
-
-class LeadListParams(BaseModel):
-    status: Optional[LeadStatus] = None
-    region: Optional[str] = None
-    from_date: Optional[date] = None
-    to_date: Optional[date] = None
-    page: int = 1
-    limit: int = 20
-
-    @field_validator("page")
-    @classmethod
-    def page_must_be_positive(cls, v):
-        if v < 1:
-            raise ValueError("page must be >= 1")
-        return v
-
-    @field_validator("limit")
-    @classmethod
-    def limit_must_be_valid(cls, v):
-        if v < 1 or v > 100:
-            raise ValueError("limit must be between 1 and 100")
-        return v
 
 
 class ExtractionResult(BaseModel):
