@@ -1,3 +1,25 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-router = APIRouter()
+from app.db import get_db
+from app.models.lead import Lead
+from app.schemas.lead import LeadStatus
+from app.schemas.pipeline import StatsOut
+
+router = APIRouter(tags=["stats"])
+
+
+@router.get("/stats", response_model=StatsOut)
+async def get_stats(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Lead.status, func.count(Lead.id)).group_by(Lead.status)
+    )
+    counts = dict(result.all())
+    return StatsOut(
+        draft=counts.get(LeadStatus.draft.value, 0),
+        sent=counts.get(LeadStatus.sent.value, 0),
+        replied_won=counts.get(LeadStatus.replied_won.value, 0),
+        replied_lost=counts.get(LeadStatus.replied_lost.value, 0),
+        archived=counts.get(LeadStatus.archived.value, 0),
+    )
