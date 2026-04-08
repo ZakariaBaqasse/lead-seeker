@@ -54,11 +54,11 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text('gen_random_uuid()'), nullable=False),
         sa.Column('started_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.Column('completed_at', sa.DateTime(timezone=True), nullable=True),
-        sa.Column('articles_fetched', sa.Integer(), server_default='0', nullable=True),
-        sa.Column('articles_processed', sa.Integer(), server_default='0', nullable=True),
-        sa.Column('leads_created', sa.Integer(), server_default='0', nullable=True),
+        sa.Column('articles_fetched', sa.Integer(), server_default='0', nullable=False),
+        sa.Column('articles_processed', sa.Integer(), server_default='0', nullable=False),
+        sa.Column('leads_created', sa.Integer(), server_default='0', nullable=False),
         sa.Column('errors', sa.JSON(), nullable=True),
-        sa.Column('status', sa.String(50), nullable=False),
+        sa.Column('status', sa.String(50), server_default='running', nullable=False),
         sa.PrimaryKeyConstraint('id')
     )
 
