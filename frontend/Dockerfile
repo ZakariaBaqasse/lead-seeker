@@ -1,16 +1,23 @@
-# syntax=docker/dockerfile:1.7
-
-FROM oven/bun:alpine
-
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Install deps (cached layer)
+# Install bun
+RUN npm install -g bun
+
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
 
-# App code
-COPY . ./
+COPY . .
+RUN bun run build
 
-EXPOSE 5173
+FROM node:20-alpine
+WORKDIR /app
 
-CMD ["bun", "run", "dev","--host"]
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/package.json ./
+
+EXPOSE 3000
+ENV PORT=3000
+ENV HOST=0.0.0.0
+
+CMD ["node", "build"]
