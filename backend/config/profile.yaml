@@ -1,0 +1,16 @@
+name: "Your Name"
+title: "Senior Software Engineer / GenAI Contractor"
+pitch: "One-sentence engagement proposition."
+
+projects:
+  - name: "Project Name"
+    description: "What you built, for whom, and the measurable outcome."
+    video_url: "https://drive.google.com/file/d/..."
+    tags:
+      - "RAG"
+      - "Python"
+      - "LLM"
+
+skills:
+  - "Python, FastAPI, LangChain"
+  - "SvelteKit, PostgreSQL, Docker"
