@@ -1,4 +1,5 @@
-import { BACKEND_URL, API_SECRET_KEY } from "$env/static/private";
+import { env } from "$env/dynamic/private";
+const { BACKEND_URL, API_SECRET_KEY } = env;
 import type {
   Lead,
   LeadsResponse,

@@ -1,39 +1,40 @@
-import { APP_PASSWORD } from '$env/static/private';
-import type { Handle } from '@sveltejs/kit';
+import { env } from "$env/dynamic/private";
+const { APP_PASSWORD } = env;
+import type { Handle } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
-  const authHeader = event.request.headers.get('authorization');
+  const authHeader = event.request.headers.get("authorization");
 
-  if (!authHeader || !authHeader.startsWith('Basic ')) {
-    return new Response('Unauthorized', {
+  if (!authHeader || !authHeader.startsWith("Basic ")) {
+    return new Response("Unauthorized", {
       status: 401,
       headers: {
-        'WWW-Authenticate': 'Basic realm="Lead Seeker"'
-      }
+        "WWW-Authenticate": 'Basic realm="Lead Seeker"',
+      },
     });
   }
 
-  const base64Credentials = authHeader.slice('Basic '.length);
+  const base64Credentials = authHeader.slice("Basic ".length);
   let credentials: string;
 
   try {
     credentials = atob(base64Credentials);
   } catch {
-    return new Response('Unauthorized', {
+    return new Response("Unauthorized", {
       status: 401,
       headers: {
-        'WWW-Authenticate': 'Basic realm="Lead Seeker"'
-      }
+        "WWW-Authenticate": 'Basic realm="Lead Seeker"',
+      },
     });
   }
 
-  const colonIndex = credentials.indexOf(':');
+  const colonIndex = credentials.indexOf(":");
   if (colonIndex === -1) {
-    return new Response('Unauthorized', {
+    return new Response("Unauthorized", {
       status: 401,
       headers: {
-        'WWW-Authenticate': 'Basic realm="Lead Seeker"'
-      }
+        "WWW-Authenticate": 'Basic realm="Lead Seeker"',
+      },
     });
   }
 
@@ -41,13 +42,16 @@ export const handle: Handle = async ({ event, resolve }) => {
   const expectedPassword = APP_PASSWORD;
 
   // Constant-time comparison to prevent timing attacks
-  if (!expectedPassword || password.length !== expectedPassword.length ||
-      !timingSafeEqual(password, expectedPassword)) {
-    return new Response('Unauthorized', {
+  if (
+    !expectedPassword ||
+    password.length !== expectedPassword.length ||
+    !timingSafeEqual(password, expectedPassword)
+  ) {
+    return new Response("Unauthorized", {
       status: 401,
       headers: {
-        'WWW-Authenticate': 'Basic realm="Lead Seeker"'
-      }
+        "WWW-Authenticate": 'Basic realm="Lead Seeker"',
+      },
     });
   }
 
