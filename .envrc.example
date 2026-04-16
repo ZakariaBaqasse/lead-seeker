@@ -1,0 +1,25 @@
+# Backend FastAPI URL (server-side only)
+export BACKEND_URL="http://localhost:8000"
+
+# HTTP Basic Auth password (used in hooks.server.ts)
+export APP_PASSWORD="your-password-here"
+
+# X-API-Key for FastAPI authentication (server-side only)
+export API_SECRET_KEY="your-api-secret-key-here"
+
+# SvelteKit server port
+export PORT="5137"
+
+export POSTGRES_USER=""
+export POSTGRES_PASSWORD=""
+export POSTGRES_DB=""
+export DATABASE_URL="postgresql+asyncpg://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:54320/$POSTGRES_DB"
+export MISTRAL_API_KEY="your_mistral_api_key_here"
+export GNEWS_API_KEY="your_gnews_api_key_here"
+export PIPELINE_SCHEDULE_HOUR="6"
+export PIPELINE_SCHEDULE_MINUTE="0"
+export LANGFUSE_SECRET_KEY=""
+export LANGFUSE_PUBLIC_KEY=""
+export LANGFUSE_BASE_URL=""
+export SERPAPI_API_KEY=""
+

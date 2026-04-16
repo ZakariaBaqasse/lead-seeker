@@ -1,23 +1,27 @@
-FROM node:20-alpine AS builder
+FROM oven/bun:alpine AS deps
 WORKDIR /app
-
-# Install bun
-RUN npm install -g bun
 
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
 
+FROM oven/bun:alpine AS dev
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+EXPOSE 5173
+ENV PORT=5173
+CMD ["bun", "run", "dev", "--host"]
+
+FROM oven/bun:alpine AS build
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN bun run build
 
-FROM node:20-alpine
+FROM node:20-alpine AS prod
 WORKDIR /app
-
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/package.json ./
-
-EXPOSE 3000
-ENV PORT=3000
+COPY --from=build /app/build ./build
+EXPOSE 5173
+ENV PORT=5173
 ENV HOST=0.0.0.0
-
 CMD ["node", "build"]

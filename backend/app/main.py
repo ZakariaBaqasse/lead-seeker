@@ -3,24 +3,29 @@ from contextlib import asynccontextmanager
 
 from app.logging_config import configure_logging
 
-configure_logging()
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.auth import verify_api_key
 from app.config import settings
+from app.limiter import limiter
 from app.api.leads import router as leads_router
 from app.api.pipeline import router as pipeline_router
 from app.api.stats import router as stats_router
 
+configure_logging()
 logger = logging.getLogger(__name__)
 
 
 async def _scheduled_pipeline_job():
     from app.db import AsyncSessionLocal
     from app.pipeline.runner import run_pipeline
+
     session = AsyncSessionLocal()
     try:
         logger.info("Scheduled pipeline starting")
@@ -60,6 +65,10 @@ app = FastAPI(
     lifespan=lifespan,
     dependencies=[Depends(verify_api_key)],
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # Dev-only CORS — not needed in production (SvelteKit calls FastAPI server-side)
 app.add_middleware(

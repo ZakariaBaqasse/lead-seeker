@@ -53,18 +53,26 @@ _mock_profile = {
 
 async def test_pipeline_run_completes(db_session):
     with (
-        patch("app.pipeline.runner.fetch_google_news", new_callable=AsyncMock) as mock_gn,
+        patch(
+            "app.pipeline.runner.fetch_serpapi", new_callable=AsyncMock
+        ) as mock_serpapi,
         patch("app.pipeline.runner.fetch_gnews", new_callable=AsyncMock) as mock_gnews,
-        patch("app.pipeline.runner.fetch_yc_directory", new_callable=AsyncMock) as mock_yc,
-        patch("app.pipeline.runner.fetch_rss_feeds", new_callable=AsyncMock) as mock_rss,
-        patch("app.pipeline.runner.extract_article", new_callable=AsyncMock) as mock_extract,
+        patch(
+            "app.pipeline.runner.fetch_rss_feeds", new_callable=AsyncMock
+        ) as mock_rss,
+        patch(
+            "app.pipeline.runner.enrich_article_body", new_callable=AsyncMock
+        ) as mock_enrich,
+        patch(
+            "app.pipeline.runner.extract_article", new_callable=AsyncMock
+        ) as mock_extract,
         patch("app.pipeline.runner.draft_email", new_callable=AsyncMock) as mock_draft,
         patch("app.pipeline.runner.get_profile") as mock_profile,
     ):
-        mock_gn.return_value = [sample_article]
+        mock_serpapi.return_value = [sample_article]
         mock_gnews.return_value = []
-        mock_yc.return_value = []
         mock_rss.return_value = []
+        mock_enrich.return_value = sample_article
         mock_extract.return_value = sample_extraction
         mock_draft.return_value = "Test email draft"
         mock_profile.return_value = _mock_profile

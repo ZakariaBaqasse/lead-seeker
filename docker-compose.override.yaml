@@ -1,0 +1,45 @@
+# Automatically merged by Docker Compose for local development.
+# Used by: docker compose watch
+# NOT read by Dokploy (it only uses docker-compose.yaml).
+
+services:
+  frontend:
+    build:
+      target: dev
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/src
+        - action: sync
+          path: ./frontend/static
+          target: /app/static
+        - action: sync+restart
+          path: ./frontend/svelte.config.js
+          target: /app/svelte.config.js
+        - action: sync+restart
+          path: ./frontend/vite.config.ts
+          target: /app/vite.config.ts
+        - action: sync+restart
+          path: ./frontend/postcss.config.mjs
+          target: /app/postcss.config.mjs
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/bun.lockb
+
+  api:
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend/app
+          target: /workspace/backend/app
+        - action: sync+restart
+          path: ./backend/alembic
+          target: /workspace/backend/alembic
+        - action: rebuild
+          path: ./backend/pyproject.toml
+        - action: rebuild
+          path: ./backend/uv.lock

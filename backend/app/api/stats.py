@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
+from app.limiter import limiter
 from app.models.lead import Lead
 from app.schemas.lead import LeadStatus
 from app.schemas.pipeline import StatsOut
@@ -11,7 +12,8 @@ router = APIRouter(tags=["stats"])
 
 
 @router.get("/stats", response_model=StatsOut)
-async def get_stats(db: AsyncSession = Depends(get_db)):
+@limiter.limit("60/minute")
+async def get_stats(request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Lead.status, func.count(Lead.id)).group_by(Lead.status)
     )

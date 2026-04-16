@@ -1,16 +1,41 @@
-name: "Your Name"
-title: "Senior Software Engineer / GenAI Contractor"
-pitch: "One-sentence engagement proposition."
+name: "Zakaria BAQASSE"
+title: "Full-Stack Software Engineer | AI & GenAI Specialist"
+pitch: "Expert in designing and delivering production-grade GenAI applications with deep focus on Agentic Workflows and Evaluation-Driven RAG pipelines."
+
+experience:
+  - position: "Full-Stack Software Engineer - AI & Platform"
+    company: "Thinkable.INC"
+    duration: "June 2024 - Present"
+    location: "Remote (US-Based)"
+    highlights:
+      - "Designed and maintained a modular micro-framework reducing new product time-to-market by 50% and project bootstrapping to <10 minutes."
+      - "Engineered agent tooling layer connecting LLMs to external APIs with production-grade Broker Isolation OAuth service."
+      - "Managed containerized services on AWS ECS/Fargate; re-architected load balancing layers (ALB) for high-scale launches (GITEX Africa 2025)."
+      - "Contributed to technical strategy and architectural decisions; mentored junior contributors on SOLID principles and clean code practices."
+      - "Built performant, scalable REST APIs integrated with responsive React interfaces delivering seamless AI-powered experiences."
 
 projects:
-  - name: "Project Name"
-    description: "What you built, for whom, and the measurable outcome."
-    video_url: "https://drive.google.com/file/d/..."
+  - name: "ResumAI – Autonomous Career Agent"
+    description: "Built a fully autonomous agentic workflow using FastAPI, LangGraph, and MistralAI to automate job application tailoring. Integrated Firecrawl and Tavily to scrape live employer data, reducing tailored application generation time from hours to <5 minutes per application."
     tags:
+      - "LangGraph"
+      - "FastAPI"
       - "RAG"
       - "Python"
-      - "LLM"
+    video_url: "https://drive.google.com/file/d/1RFMXK9axka1Z715o-IS6AWcVv9nsdneG/view"
+
+  - name: "Evaluation-Driven RAG System for Structured Document QA"
+    description: "Built a document intelligence pipeline for dense technical PDFs using VLM-based OCR, hybrid retrieval, and table-aware chunking. Introduced RAGAS + MLflow evaluation workflows, improving context recall to 0.94 and raising faithfulness to 0.932."
+    tags:
+      - "RAG"
+      - "RAGAS"
+      - "MLflow"
+      - "Vector Databases"
+    video_url: "https://drive.google.com/file/d/1XYLVn_6fEm0daA9XBuM80wGsjuswcprS/view"
 
 skills:
-  - "Python, FastAPI, LangChain"
-  - "SvelteKit, PostgreSQL, Docker"
+  - "Python (Expert), FastAPI, Django, LangGraph"
+  - "Agentic Workflows, RAG Architectures, Prompt Engineering"
+  - "React, TypeScript, SvelteKit, PostgreSQL"
+  - "AWS (ECS, Fargate, Lambda), Docker, CI/CD"
+  - "SOLID Principles, System Design, TDD (Pytest)"

@@ -2,11 +2,12 @@ import uuid
 from datetime import date, datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
+from app.limiter import limiter
 from app.models.lead import Lead
 from app.pipeline.drafter import draft_email
 from app.profile import get_profile
@@ -16,7 +17,9 @@ router = APIRouter(tags=["leads"])
 
 
 @router.get("/leads", response_model=LeadListResponse)
+@limiter.limit("60/minute")
 async def list_leads(
+    request: Request,
     status: Optional[LeadStatus] = Query(None),
     region: Optional[str] = Query(None),
     from_date: Optional[date] = Query(None),
@@ -38,7 +41,9 @@ async def list_leads(
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar_one()
 
-    query = query.order_by(Lead.created_at.desc()).offset((page - 1) * limit).limit(limit)
+    query = (
+        query.order_by(Lead.created_at.desc()).offset((page - 1) * limit).limit(limit)
+    )
     result = await db.execute(query)
     leads = result.scalars().all()
 
@@ -46,7 +51,10 @@ async def list_leads(
 
 
 @router.get("/leads/{lead_id}", response_model=LeadOut)
-async def get_lead(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+@limiter.limit("60/minute")
+async def get_lead(
+    request: Request, lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)
+):
     result = await db.execute(select(Lead).where(Lead.id == lead_id))
     lead = result.scalar_one_or_none()
     if not lead:
@@ -55,7 +63,13 @@ async def get_lead(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/leads/{lead_id}", response_model=LeadOut)
-async def update_lead(lead_id: uuid.UUID, data: LeadUpdate, db: AsyncSession = Depends(get_db)):
+@limiter.limit("30/minute")
+async def update_lead(
+    request: Request,
+    lead_id: uuid.UUID,
+    data: LeadUpdate,
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(Lead).where(Lead.id == lead_id))
     lead = result.scalar_one_or_none()
     if not lead:
@@ -79,7 +93,10 @@ async def update_lead(lead_id: uuid.UUID, data: LeadUpdate, db: AsyncSession = D
 
 
 @router.delete("/leads/{lead_id}", status_code=204)
-async def delete_lead(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+@limiter.limit("30/minute")
+async def delete_lead(
+    request: Request, lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)
+):
     result = await db.execute(select(Lead).where(Lead.id == lead_id))
     lead = result.scalar_one_or_none()
     if not lead:
@@ -90,7 +107,10 @@ async def delete_lead(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/leads/{lead_id}/regenerate")
-async def regenerate_email(lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+@limiter.limit("2/minute")
+async def regenerate_email(
+    request: Request, lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)
+):
     result = await db.execute(select(Lead).where(Lead.id == lead_id))
     lead = result.scalar_one_or_none()
     if not lead:

@@ -51,7 +51,9 @@ class LeadUpdate(BaseModel):
     @classmethod
     def status_not_null(cls, v):
         if v is None:
-            raise ValueError("status cannot be null; omit the field to leave it unchanged")
+            raise ValueError(
+                "status cannot be null; omit the field to leave it unchanged"
+            )
         return v
 
 
@@ -65,6 +67,34 @@ class ExtractionResult(BaseModel):
     company_domain: Optional[str] = None
     funding_amount: Optional[str] = None
     funding_round: Optional[str] = None
+
+    @field_validator("funding_amount", mode="before")
+    @classmethod
+    def coerce_funding_amount(cls, v):
+        if isinstance(v, (int, float)):
+            return str(int(v))
+        return v
+
+    @field_validator("employee_count_estimate", mode="before")
+    @classmethod
+    def coerce_employee_count(cls, v):
+        if isinstance(v, str):
+            import re
+
+            match = re.search(r"\d+", v)
+            return int(match.group()) if match else None
+        return v
+
+    @field_validator("company_domain", mode="before")
+    @classmethod
+    def strip_domain_url(cls, v):
+        if isinstance(v, str):
+            import re
+
+            v = re.sub(r"^https?://", "", v)
+            v = v.split("/")[0].strip()
+        return v or None
+
     funding_date: Optional[str] = None  # YYYY-MM-DD string from LLM
     employee_count_estimate: Optional[int] = None
     region: Optional[str] = None
@@ -72,3 +102,4 @@ class ExtractionResult(BaseModel):
     sector: Optional[str] = None
     summary: Optional[str] = None
     is_relevant: bool = False
+    relevance_reason: Optional[str] = None
