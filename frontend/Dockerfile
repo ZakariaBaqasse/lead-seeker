@@ -21,6 +21,8 @@ RUN bun run build
 FROM node:20-alpine AS prod
 WORKDIR /app
 COPY --from=build /app/build ./build
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./package.json
 EXPOSE 5173
 ENV PORT=5173
 ENV HOST=0.0.0.0
