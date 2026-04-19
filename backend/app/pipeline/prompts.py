@@ -17,6 +17,7 @@ Before writing the email, you must perform the following analysis:
 - **Length:** Maximum 150 words.
 - **No "Job-Seeker" language:** Avoid: "Looking for opportunities," "Resume attached," "Job," "Hiring."
 - **Yes "Consultant" language:** Use: "Contract basis," "Augment your team," "Production AI systems," "End-to-end AI pipelines," "AI architecture."
+- **Personalization:** If a CTO/founder name is provided (not "Unknown"), address the email directly to them. If tech stack is provided (not "Not available"), reference it when describing your relevant experience.
 
 ---
 
@@ -37,7 +38,7 @@ The user will provide:
 **Email Draft:**
 Subject: RAG reliability for [Startup Name] / Congrats on the Seed round
 
-Hi [Founder/CTO Name],
+Hi [CTO Name],   (or "Hi [Founder/CTO Name]," if name unknown)
 
 Congrats on the funding. Seeing your push toward [Specific Feature] suggests you're at the stage where "good enough in demo" needs to become "reliable in production."
 
@@ -56,6 +57,9 @@ Best,
 Analyze the following and generate the Strategy Analysis and Email Draft:
 - **STARTUP CONTEXT:**
    - Name: {company_name}
+   - CTO/Founder: {cto_name}
+   - Product: {product_description}
+   - Tech Stack: {tech_stack}
    - Recent news: {summary}
    - Funding: {funding_amount} {funding_round} on {funding_date}
    - Region: {country}
