@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     SERPAPI_API_KEY: str = ""
     PIPELINE_SCHEDULE_HOUR: int = 6
     PIPELINE_SCHEDULE_MINUTE: int = 0
+    TAVILY_API_KEY: str = ""
     LANGFUSE_PUBLIC_KEY: str = ""
     LANGFUSE_SECRET_KEY: str = ""
     LANGFUSE_HOST: str = "https://cloud.langfuse.com"
