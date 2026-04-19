@@ -30,6 +30,8 @@ class LeadOut(BaseModel):
     cto_name: Optional[str] = None
     cto_email: Optional[str] = None
     linkedin_url: Optional[str] = None
+    product_description: Optional[str] = None
+    tech_stack: Optional[str] = None
     status: LeadStatus
     email_draft: Optional[str] = None
     notes: Optional[str] = None
@@ -60,6 +62,14 @@ class LeadUpdate(BaseModel):
 class LeadListResponse(BaseModel):
     items: list[LeadOut]
     total: int
+
+
+class EnrichmentResult(BaseModel):
+    cto_name: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    employee_count: Optional[int] = None
+    product_description: Optional[str] = None
+    tech_stack: Optional[str] = None
 
 
 class ExtractionResult(BaseModel):
