@@ -13,6 +13,7 @@ from app.pipeline.extractor import extract_article
 from app.pipeline.fetcher import enrich_article_body
 from app.pipeline.filter import filter_lead, is_duplicate
 from app.pipeline.drafter import draft_email
+from app.pipeline.enricher import enrich_lead
 from app.pipeline.sources import RawArticle
 from app.profile import get_profile
 
@@ -41,29 +42,39 @@ async def _process_article(
             if not filter_lead(extraction):
                 return 0, 0, None
 
+            # Session 1: dedup check only
             async with AsyncSessionLocal() as session:
                 if await is_duplicate(session, extraction):
                     return 0, 0, None
 
-                funding_date = None
-                if extraction.funding_date:
-                    try:
-                        funding_date = date.fromisoformat(extraction.funding_date)
-                    except ValueError:
-                        pass
+            # Enrichment (external API calls, no DB session)
+            enrichment = await enrich_lead(extraction)
 
+            funding_date = None
+            if extraction.funding_date:
+                try:
+                    funding_date = date.fromisoformat(extraction.funding_date)
+                except ValueError:
+                    pass
+
+            # Session 2: insert lead + draft email
+            async with AsyncSessionLocal() as session:
                 lead = Lead(
                     company_name=extraction.company_name,
                     company_domain=extraction.company_domain,
                     company_description=extraction.summary,
                     region=extraction.region,
                     country=extraction.country,
-                    employee_count=extraction.employee_count_estimate,
+                    employee_count=enrichment.employee_count if enrichment else extraction.employee_count_estimate,
                     funding_amount=extraction.funding_amount,
                     funding_date=funding_date,
                     funding_round=extraction.funding_round,
                     news_headline=article.headline,
                     news_url=article.url,
+                    cto_name=enrichment.cto_name if enrichment else None,
+                    linkedin_url=enrichment.linkedin_url if enrichment else None,
+                    product_description=enrichment.product_description if enrichment else None,
+                    tech_stack=enrichment.tech_stack if enrichment else None,
                     status="draft",
                     email_draft=None,
                 )
@@ -81,6 +92,9 @@ async def _process_article(
                         "funding_date": lead.funding_date,
                         "country": lead.country,
                         "region": lead.region,
+                        "cto_name": lead.cto_name,
+                        "product_description": lead.product_description,
+                        "tech_stack": lead.tech_stack,
                     }
                     email_draft = await draft_email(lead_data, profile)
                     lead.email_draft = email_draft
