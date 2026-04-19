@@ -16,6 +16,8 @@ export interface Lead {
   cto_name: string | null;
   cto_email: string | null;
   linkedin_url: string | null;
+  product_description: string | null;
+  tech_stack: string | null;
   status: LeadStatus;
   email_draft: string | null;
   notes: string | null;
