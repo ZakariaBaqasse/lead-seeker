@@ -12,7 +12,7 @@ from tenacity import (
 from app.config import settings
 from app.pipeline.sources import RawArticle
 from app.schemas.lead import ExtractionResult
-from backend.app.pipeline.prompts import EXTRACTION_PROMPT
+from app.pipeline.prompts import EXTRACTION_PROMPT
 
 logger = logging.getLogger(__name__)
 

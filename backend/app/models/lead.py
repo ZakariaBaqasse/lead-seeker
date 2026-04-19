@@ -36,6 +36,8 @@ class Lead(Base):
     cto_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     cto_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     linkedin_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    product_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    tech_stack: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, server_default="draft")
     email_draft: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)

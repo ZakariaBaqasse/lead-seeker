@@ -8,7 +8,7 @@ from tenacity import (
     retry_if_exception_type,
 )
 from app.config import settings
-from backend.app.pipeline.prompts import DRAFTING_PROMPT
+from app.pipeline.prompts import DRAFTING_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +70,10 @@ async def draft_email(lead_data: dict, profile: dict) -> str | None:
         prompt = DRAFTING_PROMPT.format(
             profile_yaml_as_text=profile_yaml_text_safe,
             company_name=lead_data.get("company_name", ""),
-            summary=lead_data.get("company_description")
-            or lead_data.get("summary", ""),
+            cto_name=lead_data.get("cto_name") or "Unknown — address the founding team",
+            product_description=lead_data.get("product_description") or lead_data.get("company_description") or lead_data.get("summary", ""),
+            tech_stack=lead_data.get("tech_stack") or "Not available",
+            summary=lead_data.get("company_description") or lead_data.get("summary", ""),
             funding_amount=lead_data.get("funding_amount", ""),
             funding_round=lead_data.get("funding_round", ""),
             funding_date=str(lead_data.get("funding_date", "")),

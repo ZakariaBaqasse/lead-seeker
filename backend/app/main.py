@@ -43,6 +43,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(
         _scheduled_pipeline_job,
         trigger="cron",
+        day_of_week="mon-fri",
         hour=settings.PIPELINE_SCHEDULE_HOUR,
         minute=settings.PIPELINE_SCHEDULE_MINUTE,
         timezone="UTC",
@@ -51,7 +52,7 @@ async def lifespan(app: FastAPI):
     )
     scheduler.start()
     logger.info(
-        "Scheduler started: daily pipeline at %02d:%02d UTC",
+        "Scheduler started: weekday pipeline at %02d:%02d UTC (Mon-Fri)",
         settings.PIPELINE_SCHEDULE_HOUR,
         settings.PIPELINE_SCHEDULE_MINUTE,
     )

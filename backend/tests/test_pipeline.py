@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, patch
 from app.pipeline.runner import run_pipeline
 from app.pipeline.sources import RawArticle
 from app.schemas.lead import ExtractionResult
+from tests.conftest import TestingSessionLocal
 
 # ---------------------------------------------------------------------------
 # Sample data
@@ -56,7 +57,6 @@ async def test_pipeline_run_completes(db_session):
         patch(
             "app.pipeline.runner.fetch_serpapi", new_callable=AsyncMock
         ) as mock_serpapi,
-        patch("app.pipeline.runner.fetch_gnews", new_callable=AsyncMock) as mock_gnews,
         patch(
             "app.pipeline.runner.fetch_rss_feeds", new_callable=AsyncMock
         ) as mock_rss,
@@ -66,14 +66,16 @@ async def test_pipeline_run_completes(db_session):
         patch(
             "app.pipeline.runner.extract_article", new_callable=AsyncMock
         ) as mock_extract,
+        patch("app.pipeline.runner.enrich_lead", new_callable=AsyncMock) as mock_enrich_lead,
         patch("app.pipeline.runner.draft_email", new_callable=AsyncMock) as mock_draft,
         patch("app.pipeline.runner.get_profile") as mock_profile,
+        patch("app.pipeline.runner.AsyncSessionLocal", new=TestingSessionLocal),
     ):
         mock_serpapi.return_value = [sample_article]
-        mock_gnews.return_value = []
         mock_rss.return_value = []
         mock_enrich.return_value = sample_article
         mock_extract.return_value = sample_extraction
+        mock_enrich_lead.return_value = None
         mock_draft.return_value = "Test email draft"
         mock_profile.return_value = _mock_profile
 
