@@ -71,14 +71,14 @@ Field rules:
 - company_name: official company name
 - company_domain: bare domain only, no protocol or path (e.g. "example.com", not "https://example.com/about")
 - funding_amount: human-readable string with currency symbol (e.g. "$100M", "\u20ac2.6M", "\u00a3500K"); null if unknown
-- funding_round: one of Pre-Seed, Seed, Series A, Series B, Series C+, Grant, Other; null if unknown
+- funding_round: one of Pre-Seed, Seed, Series A, Series B, Series C, Series D+, Grant, Other; null if unknown
 - funding_date: ISO date string YYYY-MM-DD; null if unknown
 - employee_count_estimate: integer estimate of current headcount; null if unknown
 - region: one of Europe, USA, Other
 - country: full country name (e.g. "United Kingdom")
 - sector: one of GenAI, Other
 - summary: 2-3 sentence description of the company and what they do
-- is_relevant: true only if the article describes a GenAI startup that recently received funding
+- is_relevant: true only if the article describes a GenAI startup that recently received Pre-Seed, Seed, Series A, Series B, or Series C funding. Set to false for Series D+ rounds, or for well-established scaleups with hundreds of employees (e.g. Anthropic, OpenAI, Cohere, Mistral at scale) — these companies seek full-time employees, not contractors
 - relevance_reason: one sentence explaining why is_relevant is true or false
 
 Example output:
@@ -99,3 +99,25 @@ Example output:
 
 Article:
 {article_text}"""
+
+
+ENRICHMENT_PROMPT = """You are a data extraction assistant. Given web search results about a company called "{company_name}", extract the following fields as a JSON object. Return null for any field you are not confident about. Prefer no data over wrong data.
+
+Field rules:
+- cto_name: full name of the CTO, co-founder, or founding engineer. If multiple people are named, prefer the CTO over CEO over founder. Return null if you are not confident this is the right person at {company_name}.
+- linkedin_url: LinkedIn profile URL of the CTO/founder. Must be a linkedin.com/in/ URL. Return null if not found or ambiguous.
+- employee_count: integer estimate of current headcount from the search results. Return null if not mentioned.
+- product_description: 1-2 sentence description of what {company_name} builds or does. Return null if unclear.
+- tech_stack: comma-separated list of technologies {company_name} uses (e.g. "Python, PyTorch, React, AWS"). Only include items you are reasonably sure about. Return null if unknown.
+
+Example output:
+{{
+  "cto_name": "Jane Smith",
+  "linkedin_url": "https://www.linkedin.com/in/janesmith",
+  "employee_count": 25,
+  "product_description": "Acme AI builds automated document processing pipelines for legal firms using large language models.",
+  "tech_stack": "Python, LangChain, React, AWS"
+}}
+
+Search results:
+{snippets_text}"""
