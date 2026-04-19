@@ -116,7 +116,7 @@ async def enrich_lead(extraction: ExtractionResult) -> EnrichmentResult | None:
     company_name = extraction.company_name
     api_key = settings.TAVILY_API_KEY
     people_query = f'"{company_name}" CTO OR founder OR CEO LinkedIn'
-    company_query = f'"{company_name}" product technology stack employees'
+    company_query = f'"{company_name}" product technology stack what does {company_name} do {company_name} number of employees'
 
     try:
         people_results, company_results = await asyncio.gather(
