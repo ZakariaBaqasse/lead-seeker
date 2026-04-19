@@ -14,8 +14,8 @@ def _build_queries() -> list[str]:
     """Build queries with a rolling 12-month after: date to avoid stale year hardcodes."""
     cutoff = (date.today() - timedelta(days=365)).isoformat()
     return [
-        f'"GenAI" AND ("seed funding" OR "Series A" OR "Series B") after:{cutoff}',
-        f'"generative AI" AND ("raised" OR "funding") AND "startup" after:{cutoff}',
+        f'"GenAI" AND ("seed funding" OR "Series A" OR "Series B" OR "Series C") after:{cutoff}',
+        f'"generative AI" AND ("seed" OR "series A" OR "series B" OR "series C") AND "startup" after:{cutoff}',
     ]
 
 

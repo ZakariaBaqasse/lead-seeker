@@ -78,6 +78,31 @@ def test_filter_none_employee_count_passes():
     assert filter_lead(valid_extraction(employee_count_estimate=None)) is True
 
 
+def test_filter_series_b_passes():
+    assert filter_lead(valid_extraction(funding_round="Series B")) is True
+
+
+def test_filter_series_c_passes():
+    assert filter_lead(valid_extraction(funding_round="Series C")) is True
+
+
+def test_filter_series_d_plus_rejected():
+    assert filter_lead(valid_extraction(funding_round="Series D+")) is False
+
+
+def test_filter_grant_rejected():
+    assert filter_lead(valid_extraction(funding_round="Grant")) is False
+
+
+def test_filter_other_round_rejected():
+    assert filter_lead(valid_extraction(funding_round="Other")) is False
+
+
+def test_filter_none_funding_round_passes():
+    """Unknown funding round (None) should not be filtered out."""
+    assert filter_lead(valid_extraction(funding_round=None)) is True
+
+
 # ---------------------------------------------------------------------------
 # is_duplicate() tests
 # ---------------------------------------------------------------------------
@@ -93,7 +118,9 @@ async def test_is_duplicate_same_domain(db_session):
     db_session.add(lead)
     await db_session.commit()
 
-    extraction = valid_extraction(company_name="Different Name", company_domain="testai.com")
+    extraction = valid_extraction(
+        company_name="Different Name", company_domain="testai.com"
+    )
     assert await is_duplicate(db_session, extraction) is True
 
 
@@ -121,5 +148,7 @@ async def test_is_duplicate_domain_present_name_match_not_duplicate(db_session):
     db_session.add(lead)
     await db_session.commit()
 
-    extraction = valid_extraction(company_name="TestAI", company_domain="new-testai.com")
+    extraction = valid_extraction(
+        company_name="TestAI", company_domain="new-testai.com"
+    )
     assert await is_duplicate(db_session, extraction) is False

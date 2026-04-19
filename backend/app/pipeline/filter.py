@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 MIN_EMPLOYEES = 10
 MAX_EMPLOYEES = 50
 MAX_FUNDING_AGE_DAYS = 365  # 12 months
+ALLOWED_FUNDING_ROUNDS = {"pre-seed", "seed", "series a", "series b", "series c"}
 
 
 def filter_lead(extraction: ExtractionResult) -> bool:
@@ -19,6 +20,18 @@ def filter_lead(extraction: ExtractionResult) -> bool:
 
     if not extraction.is_relevant:
         logger.info("Filtered out (not relevant): %s", extraction.company_name)
+        return False
+
+    # Funding round filter — only accept early-to-mid stage rounds
+    if (
+        extraction.funding_round
+        and extraction.funding_round.lower() not in ALLOWED_FUNDING_ROUNDS
+    ):
+        logger.info(
+            "Filtered out (funding_round=%s): %s",
+            extraction.funding_round,
+            extraction.company_name,
+        )
         return False
 
     if not extraction.company_name:

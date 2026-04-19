@@ -22,4 +22,5 @@ export LANGFUSE_SECRET_KEY=""
 export LANGFUSE_PUBLIC_KEY=""
 export LANGFUSE_BASE_URL=""
 export SERPAPI_API_KEY=""
+export TAVILY_API_KEY=""
 
