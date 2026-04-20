@@ -8,11 +8,12 @@ from tenacity import (
     retry_if_exception_type,
 )
 from app.config import settings
-from app.pipeline.prompts import DRAFTING_PROMPT
+from app.pipeline.prompts import DRAFTING_PROMPT, CRITIQUE_REWRITE_PROMPT
 
 logger = logging.getLogger(__name__)
 
 DRAFTING_MODEL = "mistral-small-latest"
+CRITIQUE_MODEL = "mistral-medium-latest"
 
 
 @retry(
@@ -21,7 +22,12 @@ DRAFTING_MODEL = "mistral-small-latest"
     retry=retry_if_exception_type(Exception),
     reraise=True,
 )
-async def _call_mistral_drafting(prompt: str) -> str:
+async def _call_mistral_drafting(
+    prompt: str,
+    *,
+    model: str = DRAFTING_MODEL,
+    observation_name: str = "drafting-llm-call",
+) -> str:
     from mistralai.client import Mistral
 
     client = Mistral(api_key=settings.MISTRAL_API_KEY)
@@ -29,12 +35,12 @@ async def _call_mistral_drafting(prompt: str) -> str:
     langfuse = get_client()
     with langfuse.start_as_current_observation(
         as_type="generation",
-        name="drafting-llm-call",
-        model=DRAFTING_MODEL,
+        name=observation_name,
+        model=model,
         input=messages,
     ) as gen:
         response = await client.chat.complete_async(
-            model=DRAFTING_MODEL,
+            model=model,
             messages=messages,
             # No response_format — free text output for email drafting
         )
@@ -67,19 +73,42 @@ async def draft_email(lead_data: dict, profile: dict) -> str | None:
         # Escape any literal braces in the YAML dump so str.format() doesn't
         # choke on profile content like "Uses {transformer} architecture"
         profile_yaml_text_safe = profile_yaml_text.replace("{", "{{").replace("}", "}}")
+        product_description = (
+            lead_data.get("product_description")
+            or lead_data.get("company_description")
+            or lead_data.get("summary", "")
+        )
         prompt = DRAFTING_PROMPT.format(
             profile_yaml_as_text=profile_yaml_text_safe,
             company_name=lead_data.get("company_name", ""),
             cto_name=lead_data.get("cto_name") or "Unknown — address the founding team",
-            product_description=lead_data.get("product_description") or lead_data.get("company_description") or lead_data.get("summary", ""),
+            product_description=product_description,
             tech_stack=lead_data.get("tech_stack") or "Not available",
-            summary=lead_data.get("company_description") or lead_data.get("summary", ""),
+            summary=lead_data.get("company_description")
+            or lead_data.get("summary", ""),
             funding_amount=lead_data.get("funding_amount", ""),
             funding_round=lead_data.get("funding_round", ""),
             funding_date=str(lead_data.get("funding_date", "")),
             country=lead_data.get("country") or lead_data.get("region", ""),
         )
-        return await _call_mistral_drafting(prompt)
+        initial_draft = await _call_mistral_drafting(
+            prompt, observation_name="drafting-llm-call"
+        )
+
+        critique_prompt = CRITIQUE_REWRITE_PROMPT.format(
+            company_name=lead_data.get("company_name", ""),
+            product_description=product_description,
+            cto_name=lead_data.get("cto_name") or "Unknown",
+            funding_amount=lead_data.get("funding_amount", ""),
+            funding_round=lead_data.get("funding_round", ""),
+            funding_date=str(lead_data.get("funding_date", "")),
+            email_draft=initial_draft,
+        )
+        return await _call_mistral_drafting(
+            critique_prompt,
+            model=CRITIQUE_MODEL,
+            observation_name="critique-rewrite-llm-call",
+        )
     except Exception as e:
         logger.error(
             "Email drafting failed for company '%s': %s",
