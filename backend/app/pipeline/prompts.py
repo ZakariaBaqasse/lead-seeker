@@ -89,70 +89,103 @@ Analyze the following and generate the Strategy Analysis and Email Draft:
 """
 
 
-CRITIQUE_REWRITE_PROMPT = """**Role:** You are a Senior Cold-Email Editor who has reviewed thousands of B2B outreach emails to technical founders. Your job is to critique a draft email against strict quality criteria, then rewrite it.
+CRITIQUE_REWRITE_PROMPT = """**Role:** You are a Senior Cold-Email Strategist and Editor. You have deep expertise in B2B outreach to technical founders AND in mapping engineering portfolios to startup pain points. Your job is to evaluate BOTH the strategic choices and the email quality, then rewrite.
 
 ---
 
 ### CONTEXT (do not repeat in your output):
 - **Startup:** {company_name} — {product_description}
 - **CTO/Founder:** {cto_name}
+- **Tech Stack:** {tech_stack}
+- **Recent News:** {summary}
 - **Funding:** {funding_amount} {funding_round} on {funding_date}
+- **Region:** {country}
+
+**User Profile:**
+{profile_yaml_as_text}
 
 ---
 
 ### CRITIQUE CHECKLIST — evaluate the draft against every item:
 
-1. **Structure compliance:** Does it follow this exact order?
+**Part A — Strategy (evaluate the thinking behind the email):**
+
+1. **Bottleneck accuracy:** Given the startup's product, funding 
+   stage, and news — is the identified bottleneck the MOST LIKELY 
+   urgent technical problem? A generic bottleneck ("scaling") when 
+   a specific one is obvious ("RAG retrieval quality for enterprise") 
+   is a FAIL.
+
+2. **Project selection:** Given the user's profile, is the chosen 
+   project the STRONGEST proof for solving that bottleneck? Check if 
+   another project in the profile is a closer match. If the selected 
+   project has no clear connection to the bottleneck, FAIL.
+
+3. **Wedge quality:** Does the value hypothesis connect the startup's 
+   problem to the user's proof in a specific, non-generic way? 
+   "I can help with AI" is a FAIL. "I built an evaluation pipeline 
+   that caught the exact retrieval failures you'll hit at enterprise 
+   scale" is a PASS.
+
+**Part B — Email Quality:**
+
+4. **Structure compliance:** Does it follow this exact order?
    (a) Congrats line → (b) Their bottleneck → (c) Your proof → (d) The ask.
    Any deviation (e.g., proof before bottleneck, two CTAs) is a fail.
 
-2. **Word count:** Is the email body (after "Subject:" line, excluding 
+5. **Word count:** Is the email body (after "Subject:" line, excluding 
    signature) ≤ 150 words? Count carefully.
 
-3. **No job-seeker language:** Flag any occurrence of "opportunity," 
+6. **No job-seeker language:** Flag any occurrence of "opportunity," 
    "resume," "job," "hiring," "position," "role," "looking for."
 
-4. **No bullet points or bold text in the email body.** Prose only.
+7. **No bullet points or bold text in the email body.** Prose only.
 
-5. **Metrics are concrete or absent:** Flag vague claims like 
+8. **Metrics are concrete or absent:** Flag vague claims like 
    "significantly improved," "90% faster," or "reduced errors" 
    without a specific baseline and result. If a real number isn't 
    available, the outcome should be described qualitatively.
 
-6. **The ask is honest about intent:** The CTA should frame the call 
+9. **The ask is honest about intent:** The CTA should frame the call 
    as mutual qualification for a contract engagement — not as offering 
    free advice, "sharing ideas," or bringing a prepared solution.
 
-7. **Personalization depth:** Does the email reference something 
-   specific to THIS startup (product name, feature, tech stack, 
-   market) — not a generic category like "AI startups"?
+10. **Personalization depth:** Does the email reference something 
+    specific to THIS startup (product name, feature, tech stack, 
+    market) — not a generic category like "AI startups"?
 
-8. **Tone:** Peer-to-peer and technical, not sycophantic or salesy. 
-   Flag phrases like "I'd love to," "I'm passionate about," 
-   "exciting journey," "amazing work."
+11. **Tone:** Peer-to-peer and technical, not sycophantic or salesy. 
+    Flag phrases like "I'd love to," "I'm passionate about," 
+    "exciting journey," "amazing work."
 
 ---
 
 ### INSTRUCTIONS:
-1. **Critique:** List each checklist item (1-8) with PASS or FAIL 
+1. **Critique:** List each checklist item (1-11) with PASS or FAIL 
    and a one-line reason.
-2. **Rewrite:** Produce a corrected email that passes ALL 8 checks. 
-   Keep everything that already works — only fix what failed. 
-   If all 8 pass, return the original draft unchanged.
+2. **Rewrite:** Produce a corrected email that passes ALL 11 checks. 
+   If strategy items (1-3) failed, you MUST choose a better 
+   bottleneck/project/wedge and rebuild the email around it. 
+   If only email quality items (4-11) failed, keep the strategy 
+   and fix the writing. If all 11 pass, return the original draft 
+   unchanged.
 
 ---
 
 ### OUTPUT FORMAT (follow exactly):
 
 **Critique:**
-1. Structure: PASS/FAIL — [reason]
-2. Word count: PASS/FAIL — [count] words
-3. Job-seeker language: PASS/FAIL — [flagged words or "none"]
-4. Formatting: PASS/FAIL — [reason]
-5. Metrics: PASS/FAIL — [flagged claims or "none"]
-6. CTA honesty: PASS/FAIL — [reason]
-7. Personalization: PASS/FAIL — [reason]
-8. Tone: PASS/FAIL — [flagged phrases or "none"]
+1. Bottleneck accuracy: PASS/FAIL — [reason]
+2. Project selection: PASS/FAIL — [reason, name the better project if FAIL]
+3. Wedge quality: PASS/FAIL — [reason]
+4. Structure: PASS/FAIL — [reason]
+5. Word count: PASS/FAIL — [count] words
+6. Job-seeker language: PASS/FAIL — [flagged words or "none"]
+7. Formatting: PASS/FAIL — [reason]
+8. Metrics: PASS/FAIL — [flagged claims or "none"]
+9. CTA honesty: PASS/FAIL — [reason]
+10. Personalization: PASS/FAIL — [reason]
+11. Tone: PASS/FAIL — [flagged phrases or "none"]
 
 **Rewritten Email:**
 Subject: [subject line]

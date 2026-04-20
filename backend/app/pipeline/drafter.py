@@ -99,9 +99,14 @@ async def draft_email(lead_data: dict, profile: dict) -> str | None:
             company_name=lead_data.get("company_name", ""),
             product_description=product_description,
             cto_name=lead_data.get("cto_name") or "Unknown",
+            tech_stack=lead_data.get("tech_stack") or "Not available",
+            summary=lead_data.get("company_description")
+            or lead_data.get("summary", ""),
             funding_amount=lead_data.get("funding_amount", ""),
             funding_round=lead_data.get("funding_round", ""),
             funding_date=str(lead_data.get("funding_date", "")),
+            country=lead_data.get("country") or lead_data.get("region", ""),
+            profile_yaml_as_text=profile_yaml_text_safe,
             email_draft=initial_draft,
         )
         return await _call_mistral_drafting(
