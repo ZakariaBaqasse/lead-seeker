@@ -20,7 +20,31 @@
 ### Test result
 `uv run pytest tests/test_api.py -x -q` — 1 pre-existing failure (`test_health_with_auth` returns 403; confirmed failing on `main` before any changes). No regressions introduced.
 
-### Notes for Phase 2 (from Phase 1)
+## Phase 4 — Frontend UX
+
+**Status:** ✅ Complete  
+**Commit:** `45b0c2f`
+
+### What was done
+
+| Task | File(s) | Summary |
+|------|---------|---------|
+| 4.1 | `frontend/src/lib/types.ts` | Added `no_response` to `LeadStatus`; added 5 follow-up fields to `Lead` interface; added `no_response: number` to `StatsResponse`; updated `LeadUpdate.status` to `Exclude<LeadStatus, 'no_response'>` |
+| 4.2 | `frontend/src/lib/api.ts` | Added `markFollowUpSent()` function calling `POST /api/leads/{id}/follow-ups/mark-sent` |
+| 4.2 | `frontend/src/routes/leads/[id]/+page.server.ts` | Added `markFollowUpSent` form action; imported new API function |
+| 4.2 | `frontend/src/routes/leads/[id]/+page.svelte` | Added follow-up state (`follow_up_count`, `follow_up_due_date`, `follow_up_ready`, `follow_up_draft`); synced via `$effect`; added Follow-Up section showing status, ready banner, draft textarea with copy, and mark-sent form button |
+| 4.3 | `frontend/src/routes/+page.svelte` | Added `no_response` option to status filter select |
+| 4.3 | `frontend/src/routes/+page.server.ts` | Added `no_response: 0` to stats fallback; cast advance-status to `Exclude<LeadStatus, 'no_response'>` |
+| 4.4 | `frontend/src/lib/components/StatusBadge.svelte` | Added `no_response` case with `bg-warning-subtle text-warning` styling |
+| 4.4 | `frontend/src/lib/components/StatsHeader.svelte` | Added "No Response" stat card; updated grid to `lg:grid-cols-7` |
+
+### Build result
+`bun run check` — 0 errors, 0 warnings.
+
+### Notes for next phases
+- The follow-up section is visible when `lead.status === 'sent'` or when follow-up data exists; it shows the draft and a "Mark Follow-Up as Sent" button only when `follow_up_ready === true`.
+- `no_response` is intentionally excluded from the manual status selector in the lead detail form — it can only be set by the backend scheduler.
+ (from Phase 1)
 - Migration `003` is ready to apply; run `uv run alembic upgrade head` against dev DB before testing follow-up logic.
 - `ManualLeadStatus` is imported alongside `LeadStatus` — Phase 2 code that handles status transitions should use `LeadStatus` for reads and `ManualLeadStatus` for user-facing updates.
 - Config keys are wired via `pydantic-settings`; populate `.env` with real Telegram credentials when wiring up notifications.
@@ -67,3 +91,23 @@
 - `run_followup_job` is fully wired and scheduler-registered; the frontend (Phase 4) can surface `follow_up_ready`, `follow_up_draft`, and `follow_up_count` fields already present on `LeadOut`.
 - Telegram is best-effort and does not affect DB state; configure `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` in backend `.env` when ready.
 - `draft_follow_up_email` pulls `email_draft` from `lead_data` as the original cold email context — ensure lead_data dict includes that key when calling manually.
+
+## Phase 5 — Validation and Documentation
+
+**Status:** ✅ Complete  
+**Commits:** `7e6f1da`, `4b59fff`
+
+### What was done
+
+| Task | File(s) | Summary |
+|------|---------|---------|
+| 5.1 | `backend/tests/test_followups.py` | Created comprehensive test file: 5 unit tests for `add_business_days()` (Mon/Thu/Fri start, zero days, weekend start); 8 API-level tests covering first-send initialization, `no_response` rejection, terminal-reopen block, mark-sent increment, duplicate mark-sent block, max-count rejection, terminal-transition flag clearing, and stats `no_response` count |
+| 5.2 | `README.md` | Added `FOLLOW_UP_SCHEDULE_HOUR/MINUTE`, `FOLLOW_UP_TIMEZONE`, `FOLLOW_UP_BUSINESS_DAYS`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` to the `.envrc` example in the Environment Variables section |
+
+### Test results
+
+```
+tests/test_api.py + tests/test_followups.py: 26 passed in 0.34s
+```
+
+Pre-existing failure in `tests/test_filter.py::test_filter_non_genai_sector_rejected` is unrelated to this feature (predates all follow-up work; last touched in commit `262a4f0`).
