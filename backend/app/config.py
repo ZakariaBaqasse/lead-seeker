@@ -13,6 +13,12 @@ class Settings(BaseSettings):
     LANGFUSE_PUBLIC_KEY: str = ""
     LANGFUSE_SECRET_KEY: str = ""
     LANGFUSE_HOST: str = "https://cloud.langfuse.com"
+    FOLLOW_UP_SCHEDULE_HOUR: int = 8
+    FOLLOW_UP_SCHEDULE_MINUTE: int = 0
+    FOLLOW_UP_TIMEZONE: str = "Africa/Casablanca"
+    FOLLOW_UP_BUSINESS_DAYS: int = 3
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_CHAT_ID: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
