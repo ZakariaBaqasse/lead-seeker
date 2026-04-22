@@ -582,7 +582,7 @@ Goal: make the feature safe to ship and understandable to operate.
 2. Add frontend checks where practical.
    Files: frontend test surface if present, otherwise manual verification notes in docs
 3. Document operational behavior and environment variables.
-   Files: `README.md`, `backend/README.md`, or both
+   Files: `README.md`, `backend/README.md`
 
 Acceptance criteria:
 
