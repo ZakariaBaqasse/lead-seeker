@@ -1,6 +1,7 @@
 import uuid
 from datetime import date, datetime, timezone
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import func, select
@@ -10,8 +11,12 @@ from app.db import get_db
 from app.limiter import limiter
 from app.models.lead import Lead
 from app.pipeline.drafter import draft_email
+from app.pipeline.followups import add_business_days
 from app.profile import get_profile
 from app.schemas.lead import LeadListResponse, LeadOut, LeadStatus, LeadUpdate
+
+CASABLANCA_TZ = ZoneInfo("Africa/Casablanca")
+_TERMINAL_STATUSES = {"replied_won", "replied_lost", "archived", "no_response"}
 
 router = APIRouter(tags=["leads"])
 
@@ -76,17 +81,40 @@ async def update_lead(
         raise HTTPException(status_code=404, detail="Lead not found")
 
     update_data = data.model_dump(exclude_unset=True)
+    new_status_raw = update_data.get("status")
+    new_status_str: str | None = (
+        new_status_raw.value if hasattr(new_status_raw, "value") else new_status_raw
+    )
+
+    # Reject reopening a terminal lead to 'sent'
+    if new_status_str == "sent" and lead.status in _TERMINAL_STATUSES:
+        raise HTTPException(
+            status_code=422, detail="Cannot reopen a terminal lead to sent"
+        )
+
     for field, value in update_data.items():
         if field == "status" and value is not None:
             setattr(lead, field, value.value if hasattr(value, "value") else value)
         else:
             setattr(lead, field, value)
 
-    if update_data.get("status") in (LeadStatus.sent, "sent"):
-        if lead.sent_at is None:
-            lead.sent_at = datetime.now(timezone.utc)
+    now_utc = datetime.now(timezone.utc)
+    today_casablanca: date = datetime.now(CASABLANCA_TZ).date()
 
-    lead.updated_at = datetime.now(timezone.utc)
+    # draft → sent (first send only: sent_at is still null)
+    if new_status_str == "sent" and lead.sent_at is None:
+        lead.sent_at = now_utc
+        lead.last_contact_at = now_utc
+        lead.follow_up_count = 0
+        lead.follow_up_ready = False
+        lead.follow_up_due_date = add_business_days(today_casablanca, 3)
+
+    # Transition to terminal outcome: clear follow-up scheduling
+    if new_status_str in {"replied_won", "replied_lost", "archived"}:
+        lead.follow_up_ready = False
+        lead.follow_up_due_date = None
+
+    lead.updated_at = now_utc
     await db.commit()
     await db.refresh(lead)
     return lead
@@ -104,6 +132,37 @@ async def delete_lead(
     await db.delete(lead)
     await db.commit()
     return Response(status_code=204)
+
+
+@router.post("/leads/{lead_id}/follow-ups/mark-sent", response_model=LeadOut)
+@limiter.limit("10/minute")
+async def mark_follow_up_sent(
+    request: Request, lead_id: uuid.UUID, db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Lead).where(Lead.id == lead_id))
+    lead = result.scalar_one_or_none()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+
+    if lead.status != "sent":
+        raise HTTPException(status_code=422, detail="Lead is not in sent status")
+    if not lead.follow_up_ready:
+        raise HTTPException(status_code=422, detail="No follow-up draft is ready")
+    if lead.follow_up_count >= 2:
+        raise HTTPException(status_code=422, detail="Maximum follow-up count reached")
+
+    now_utc = datetime.now(timezone.utc)
+    today_casablanca: date = datetime.now(CASABLANCA_TZ).date()
+
+    lead.follow_up_count += 1
+    lead.last_contact_at = now_utc
+    lead.follow_up_ready = False
+    lead.follow_up_due_date = add_business_days(today_casablanca, 3)
+    lead.updated_at = now_utc
+
+    await db.commit()
+    await db.refresh(lead)
+    return lead
 
 
 @router.post("/leads/{lead_id}/regenerate")
