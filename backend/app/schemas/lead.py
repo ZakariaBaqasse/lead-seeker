@@ -12,6 +12,17 @@ class LeadStatus(str, Enum):
     replied_won = "replied_won"
     replied_lost = "replied_lost"
     archived = "archived"
+    no_response = "no_response"
+
+
+class ManualLeadStatus(str, Enum):
+    """Status values that can be set manually (excludes system-managed no_response)."""
+
+    draft = "draft"
+    sent = "sent"
+    replied_won = "replied_won"
+    replied_lost = "replied_lost"
+    archived = "archived"
 
 
 class LeadOut(BaseModel):
@@ -36,6 +47,12 @@ class LeadOut(BaseModel):
     email_draft: Optional[str] = None
     notes: Optional[str] = None
     sent_at: Optional[datetime] = None
+    last_contact_at: Optional[datetime] = None
+    follow_up_count: int = 0
+    follow_up_due_date: Optional[date] = None
+    follow_up_ready: bool = False
+    follow_up_generated_at: Optional[datetime] = None
+    follow_up_draft: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -47,7 +64,7 @@ class LeadUpdate(BaseModel):
     cto_email: Optional[str] = None
     linkedin_url: Optional[str] = None
     notes: Optional[str] = None
-    status: Optional[LeadStatus] = None
+    status: Optional[ManualLeadStatus] = None
 
     @field_validator("status", mode="before")
     @classmethod
