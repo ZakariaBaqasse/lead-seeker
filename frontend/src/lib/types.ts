@@ -1,4 +1,4 @@
-export type LeadStatus = 'draft' | 'sent' | 'replied_won' | 'replied_lost' | 'archived';
+export type LeadStatus = 'draft' | 'sent' | 'replied_won' | 'replied_lost' | 'archived' | 'no_response';
 
 export interface Lead {
   id: string;
@@ -22,6 +22,12 @@ export interface Lead {
   email_draft: string | null;
   notes: string | null;
   sent_at: string | null;
+  last_contact_at: string | null;
+  follow_up_count: number;
+  follow_up_due_date: string | null;
+  follow_up_ready: boolean;
+  follow_up_generated_at: string | null;
+  follow_up_draft: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -37,6 +43,7 @@ export interface StatsResponse {
   replied_won: number;
   replied_lost: number;
   archived: number;
+  no_response: number;
   total: number;
 }
 
@@ -67,5 +74,5 @@ export interface LeadUpdate {
   cto_email?: string | null;
   linkedin_url?: string | null;
   notes?: string | null;
-  status?: LeadStatus;
+  status?: Exclude<LeadStatus, 'no_response'>;
 }

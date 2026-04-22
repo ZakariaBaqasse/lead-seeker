@@ -26,6 +26,12 @@
   let status = $state<LeadStatus>("draft");
   let email_draft = $state("");
 
+  // Follow-up state
+  let follow_up_count = $state(0);
+  let follow_up_due_date = $state<string | null>(null);
+  let follow_up_ready = $state(false);
+  let follow_up_draft = $state<string | null>(null);
+
   // Initialize from data prop (avoids state_referenced_locally warning)
   $effect(() => {
     cto_name = data.lead.cto_name ?? "";
@@ -34,13 +40,19 @@
     notes = data.lead.notes ?? "";
     status = data.lead.status;
     email_draft = data.lead.email_draft ?? "";
+    follow_up_count = data.lead.follow_up_count ?? 0;
+    follow_up_due_date = data.lead.follow_up_due_date ?? null;
+    follow_up_ready = data.lead.follow_up_ready ?? false;
+    follow_up_draft = data.lead.follow_up_draft ?? null;
   });
 
   // UI state
   let isSubmitting = $state(false);
   let isRegenerating = $state(false);
+  let isMarkingFollowUp = $state(false);
   let showDeleteModal = $state(false);
   let copied = $state(false);
+  let followUpCopied = $state(false);
 
   // Sync from updated form action data
   $effect(() => {
@@ -51,6 +63,10 @@
         linkedin_url = form.lead.linkedin_url ?? "";
         notes = form.lead.notes ?? "";
         status = form.lead.status;
+        follow_up_count = form.lead.follow_up_count ?? 0;
+        follow_up_due_date = form.lead.follow_up_due_date ?? null;
+        follow_up_ready = form.lead.follow_up_ready ?? false;
+        follow_up_draft = form.lead.follow_up_draft ?? null;
         toastStore.addToast("Lead updated successfully", "success");
       } else if ("email_draft" in form && form.email_draft) {
         email_draft = form.email_draft;
@@ -75,6 +91,17 @@
       await navigator.clipboard.writeText(email_draft);
       copied = true;
       setTimeout(() => (copied = false), 2000);
+    } catch {
+      toastStore.addToast("Failed to copy to clipboard", "error");
+    }
+  }
+
+  async function copyFollowUpToClipboard() {
+    if (!follow_up_draft) return;
+    try {
+      await navigator.clipboard.writeText(follow_up_draft);
+      followUpCopied = true;
+      setTimeout(() => (followUpCopied = false), 2000);
     } catch {
       toastStore.addToast("Failed to copy to clipboard", "error");
     }
@@ -370,6 +397,77 @@
           </div>
         {/if}
       </section>
+
+      <!-- Follow-Up -->
+      {#if data.lead.status === 'sent' || follow_up_count > 0 || follow_up_draft}
+        <section>
+          <h2
+            class="text-base font-semibold text-text-primary mb-4 pb-2 border-b border-border"
+          >
+            Follow-Up
+          </h2>
+
+          <!-- Follow-up status info -->
+          <div class="space-y-3 mb-4">
+            <div class="flex items-center gap-4 text-sm">
+              <span class="text-text-secondary">Follow-ups sent:</span>
+              <span class="font-medium text-text-primary">{follow_up_count}/2</span>
+            </div>
+
+            {#if follow_up_ready}
+              <div class="flex items-center gap-2 p-3 bg-accent-subtle border border-accent/20 rounded-md text-sm text-accent font-medium">
+                <span>🔔</span>
+                <span>Follow-up {follow_up_count + 1} ready to send</span>
+              </div>
+            {:else if follow_up_due_date && follow_up_count < 2}
+              <div class="text-sm text-text-secondary">
+                Next follow-up due: <span class="text-text-primary font-medium">{follow_up_due_date}</span>
+              </div>
+            {/if}
+          </div>
+
+          <!-- Follow-up draft -->
+          {#if follow_up_draft}
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-text-secondary">Follow-Up Draft</span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onclick={copyFollowUpToClipboard}
+                  type="button"
+                >
+                  {followUpCopied ? "✓ Copied" : "Copy"}
+                </Button>
+              </div>
+              <pre
+                class="bg-bg-subtle border border-border rounded-md p-4 text-sm font-mono text-text-primary whitespace-pre-wrap leading-relaxed min-h-32 overflow-auto">{follow_up_draft}</pre>
+            </div>
+          {/if}
+
+          <!-- Mark as sent button -->
+          {#if follow_up_ready}
+            <form
+              method="POST"
+              action="?/markFollowUpSent"
+              use:enhance={() => {
+                isMarkingFollowUp = true;
+                return async ({ update }) => {
+                  isMarkingFollowUp = false;
+                  await update({ reset: false });
+                };
+              }}
+            >
+              <Button
+                type="submit"
+                loading={isMarkingFollowUp}
+              >
+                Mark Follow-Up as Sent
+              </Button>
+            </form>
+          {/if}
+        </section>
+      {/if}
 
       <!-- Delete -->
       <section class="pt-4 border-t border-border">

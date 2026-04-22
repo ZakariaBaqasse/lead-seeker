@@ -1,5 +1,5 @@
 import type { PageServerLoad, Actions } from './$types';
-import { getLead, updateLead, deleteLead, regenerateEmail } from '$lib/api';
+import { getLead, updateLead, deleteLead, regenerateEmail, markFollowUpSent } from '$lib/api';
 import { error, redirect, fail } from '@sveltejs/kit';
 import type { LeadStatus, LeadUpdate } from '$lib/types';
 
@@ -24,7 +24,7 @@ export const actions: Actions = {
       cto_email: (data.get('cto_email') as string) || null,
       linkedin_url: (data.get('linkedin_url') as string) || null,
       notes: (data.get('notes') as string) || null,
-      status: (data.get('status') as LeadStatus) || undefined
+      status: (data.get('status') as Exclude<LeadStatus, 'no_response'>) || undefined
     };
     // Remove undefined keys
     Object.keys(update).forEach((k) => {
@@ -54,5 +54,14 @@ export const actions: Actions = {
       return fail(500, { error: 'Failed to delete lead' });
     }
     throw redirect(303, '/');
+  },
+
+  markFollowUpSent: async ({ params }) => {
+    try {
+      const lead = await markFollowUpSent(params.id);
+      return { success: true, lead };
+    } catch (e) {
+      return fail(500, { error: 'Failed to mark follow-up as sent' });
+    }
   }
 };

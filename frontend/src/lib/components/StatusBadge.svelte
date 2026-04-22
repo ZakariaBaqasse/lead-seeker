@@ -12,7 +12,8 @@
     sent: { label: 'Sent', classes: 'bg-accent-subtle text-accent' },
     replied_won: { label: 'Reply Won', classes: 'bg-success-subtle text-success' },
     replied_lost: { label: 'Reply Lost', classes: 'bg-danger-subtle text-danger' },
-    archived: { label: 'Archived', classes: 'bg-neutral-subtle text-neutral' }
+    archived: { label: 'Archived', classes: 'bg-neutral-subtle text-neutral' },
+    no_response: { label: 'No Response', classes: 'bg-warning-subtle text-warning' }
   };
 
   let current = $derived(config[status] ?? config.draft);

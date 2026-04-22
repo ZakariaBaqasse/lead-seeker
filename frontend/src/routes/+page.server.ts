@@ -41,6 +41,7 @@ export const load: PageServerLoad = async ({ url }) => {
       replied_won: 0,
       replied_lost: 0,
       archived: 0,
+      no_response: 0,
       total: 0,
     })),
     getPipelineStatus().catch(() => ({
@@ -68,7 +69,7 @@ export const actions: Actions = {
   "advance-status": async ({ request }) => {
     const data = await request.formData();
     const id = data.get("id") as string;
-    const status = data.get("status") as LeadStatus;
+    const status = data.get("status") as Exclude<LeadStatus, 'no_response'>;
     if (!id || !status) return fail(400, { error: "Missing id or status" });
     try {
       await updateLead(id, { status });
