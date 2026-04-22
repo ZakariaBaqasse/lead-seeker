@@ -8,7 +8,12 @@ from tenacity import (
     retry_if_exception_type,
 )
 from app.config import settings
-from app.pipeline.prompts import DRAFTING_PROMPT, CRITIQUE_REWRITE_PROMPT
+from app.pipeline.prompts import (
+    DRAFTING_PROMPT,
+    CRITIQUE_REWRITE_PROMPT,
+    FOLLOW_UP_DRAFTING_PROMPT,
+    FOLLOW_UP_CRITIQUE_PROMPT,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +122,68 @@ async def draft_email(lead_data: dict, profile: dict) -> str | None:
     except Exception as e:
         logger.error(
             "Email drafting failed for company '%s': %s",
+            lead_data.get("company_name", "unknown"),
+            e,
+        )
+        return None
+
+
+async def draft_follow_up_email(
+    lead_data: dict,
+    profile: dict,
+    follow_up_number: int,
+) -> str | None:
+    """Generate a follow-up email draft.
+
+    Returns the draft text or None on failure.
+    follow_up_number is 1-based: 1 = first follow-up, 2 = second follow-up.
+    """
+    logger.info(
+        "Drafting follow-up %d for company '%s'",
+        follow_up_number,
+        lead_data.get("company_name", "unknown"),
+    )
+    try:
+        profile_yaml_text = yaml.dump(
+            profile, default_flow_style=False, allow_unicode=True
+        )
+        profile_yaml_text_safe = profile_yaml_text.replace("{", "{{").replace("}", "}}")
+
+        product_description = (
+            lead_data.get("product_description")
+            or lead_data.get("company_description")
+            or lead_data.get("summary", "")
+        )
+        original_draft = lead_data.get("email_draft") or ""
+
+        prompt = FOLLOW_UP_DRAFTING_PROMPT.format(
+            company_name=lead_data.get("company_name", ""),
+            cto_name=lead_data.get("cto_name") or "the founding team",
+            product_description=product_description,
+            tech_stack=lead_data.get("tech_stack") or "Not available",
+            follow_up_number=follow_up_number,
+            original_email_draft=original_draft,
+            profile_yaml_as_text=profile_yaml_text_safe,
+        )
+        initial_draft = await _call_mistral_drafting(
+            prompt, observation_name="followup-drafting-llm-call"
+        )
+
+        critique_prompt = FOLLOW_UP_CRITIQUE_PROMPT.format(
+            follow_up_number=follow_up_number,
+            original_email_draft=original_draft,
+            follow_up_draft=initial_draft,
+            company_name=lead_data.get("company_name", ""),
+            profile_yaml_as_text=profile_yaml_text_safe,
+        )
+        return await _call_mistral_drafting(
+            critique_prompt,
+            model=CRITIQUE_MODEL,
+            observation_name="followup-critique-rewrite-llm-call",
+        )
+    except Exception as e:
+        logger.error(
+            "Follow-up drafting failed for company '%s': %s",
             lead_data.get("company_name", "unknown"),
             e,
         )
