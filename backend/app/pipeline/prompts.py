@@ -238,6 +238,119 @@ Article:
 {article_text}"""
 
 
+FOLLOW_UP_DRAFTING_PROMPT = """**Role:** You are a B2B cold-email specialist writing follow-up emails for an AI Engineering Consultant.
+
+**Context:**
+- Company: {company_name}
+- CTO/Founder: {cto_name}
+- Product: {product_description}
+- Tech Stack: {tech_stack}
+- This is follow-up number {follow_up_number} of 2.
+- Original cold email sent:
+---
+{original_email_draft}
+---
+
+**Consultant Profile:**
+{profile_yaml_as_text}
+
+---
+
+### INSTRUCTIONS:
+
+Write a concise follow-up email. You must NOT copy or closely paraphrase the original cold email — the recipient already read it.
+
+**Follow-up 1 rules (follow_up_number = 1):**
+- Acknowledge the prior outreach briefly (one line, not apologetic)
+- Reinforce the core value proposition in fresh language — don't repeat the original email verbatim
+- Restate the ask in one sentence
+- Maximum 100 words in the email body
+- Tone: direct, peer-to-peer, professional
+
+**Follow-up 2 rules (follow_up_number = 2):**
+- Lighter touch — acknowledge this is the last follow-up, no pressure
+- Do not repeat the prior follow-up content
+- Maximum 80 words in the email body
+- Tone: gracious, low-friction, leaves door open
+
+**Hard constraints (all follow-ups):**
+- No fabricated claims, no invented metrics
+- No bullet points or bold text in the email body (prose only)
+- No job-seeker language ("opportunity," "resume," "role," "position," "hiring")
+- Do not put "follow-up" or "following up" in the subject line
+- Reference the company context naturally — this must not read as a template
+
+---
+
+### OUTPUT FORMAT:
+
+Subject: [subject line — no "follow-up" phrasing]
+
+[email body — prose only, no bullets]
+
+Best,
+[Consultant Name from profile]
+"""
+
+FOLLOW_UP_CRITIQUE_PROMPT = """**Role:** You are a senior cold-email editor reviewing follow-up emails in a 2-step outreach sequence.
+
+**Context:**
+- Company: {company_name}
+- Follow-up number: {follow_up_number} of 2
+- Original cold email:
+---
+{original_email_draft}
+---
+- Follow-up draft to review:
+---
+{follow_up_draft}
+---
+
+**Consultant Profile:**
+{profile_yaml_as_text}
+
+---
+
+### CRITIQUE CHECKLIST:
+
+1. **Not a copy:** Does the follow-up avoid repeating the cold email's content verbatim or near-verbatim? FAIL if more than one sentence is recycled.
+2. **Brevity:** Is the email body ≤ 100 words for FU1, ≤ 80 words for FU2? Count carefully.
+3. **Subject line:** Does it avoid "follow-up," "following up," or "checking in"? FAIL if it includes these.
+4. **No job-seeker language:** Flags any occurrence of "opportunity," "resume," "job," "hiring," "position," "role," "looking for."
+5. **Tone for sequence position:** For FU1 — confident and direct. For FU2 — lighter touch, no pressure, door left open. Appropriate?
+6. **No fabrications:** No invented metrics, no promises of free work, no claims that can't be verified from the profile.
+7. **Prose only:** No bullet points or bold text in the email body.
+
+---
+
+### INSTRUCTIONS:
+1. Score each checklist item PASS or FAIL with a one-line reason.
+2. If any items FAIL, rewrite the email to fix them.
+3. If all pass, return the original draft unchanged.
+
+---
+
+### OUTPUT FORMAT:
+
+**Critique:**
+1. Not a copy: PASS/FAIL — [reason]
+2. Brevity: PASS/FAIL — [word count]
+3. Subject line: PASS/FAIL — [reason]
+4. No job-seeker language: PASS/FAIL — [flagged words or "none"]
+5. Tone for sequence position: PASS/FAIL — [reason]
+6. No fabrications: PASS/FAIL — [reason]
+7. Prose only: PASS/FAIL — [reason]
+
+**Final Email:**
+Subject: [subject line]
+
+[email body]
+
+Best,
+[Consultant Name]
+"""
+
+
 ENRICHMENT_PROMPT = """You are a data extraction assistant. Given web search results about a company called "{company_name}", extract the following fields as a JSON object. Return null for any field you are not confident about. Prefer no data over wrong data.
 
 Field rules:

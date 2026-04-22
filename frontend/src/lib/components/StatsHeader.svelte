@@ -13,11 +13,12 @@
     { label: 'Sent', value: stats.sent, classes: 'text-accent' },
     { label: 'Reply Won', value: stats.replied_won, classes: 'text-success' },
     { label: 'Reply Lost', value: stats.replied_lost, classes: 'text-danger' },
+    { label: 'No Response', value: stats.no_response, classes: 'text-warning' },
     { label: 'Archived', value: stats.archived, classes: 'text-text-tertiary' }
   ]);
 </script>
 
-<div class="grid grid-cols-3 lg:grid-cols-6 gap-3">
+<div class="grid grid-cols-3 lg:grid-cols-7 gap-3">
   {#each cards as card}
     <div class="bg-surface border border-border rounded-md p-4 text-center">
       <div class="text-2xl font-bold {card.classes}">{card.value}</div>

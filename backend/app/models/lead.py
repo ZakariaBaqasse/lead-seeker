@@ -1,6 +1,6 @@
 import uuid
 from datetime import date, datetime
-from sqlalchemy import Date, DateTime, Index, Integer, String, Text, func, text
+from sqlalchemy import Boolean, CheckConstraint, Date, DateTime, Index, Integer, String, Text, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db import Base
@@ -17,6 +17,9 @@ class Lead(Base):
             unique=True,
             postgresql_where=text("company_domain IS NOT NULL"),
         ),
+        Index("idx_leads_follow_up_due_date", "follow_up_due_date"),
+        Index("idx_leads_followup_composite", "status", "follow_up_ready", "follow_up_due_date"),
+        CheckConstraint("follow_up_count >= 0 AND follow_up_count <= 2", name="ck_leads_follow_up_count_range"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -42,6 +45,12 @@ class Lead(Base):
     email_draft: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_contact_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    follow_up_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    follow_up_due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    follow_up_ready: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
+    follow_up_generated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    follow_up_draft: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

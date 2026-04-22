@@ -37,6 +37,21 @@ async def _scheduled_pipeline_job():
         await session.close()
 
 
+async def _scheduled_followup_job():
+    from app.db import AsyncSessionLocal
+    from app.pipeline.followups import run_followup_job
+
+    session = AsyncSessionLocal()
+    try:
+        logger.info("Scheduled follow-up job starting")
+        await run_followup_job(session)
+        logger.info("Scheduled follow-up job finished")
+    except Exception as e:
+        logger.error("Scheduled follow-up job error: %s", e, exc_info=True)
+    finally:
+        await session.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler = AsyncIOScheduler()
@@ -48,6 +63,16 @@ async def lifespan(app: FastAPI):
         minute=settings.PIPELINE_SCHEDULE_MINUTE,
         timezone="UTC",
         id="daily_pipeline",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        _scheduled_followup_job,
+        trigger="cron",
+        day_of_week="mon-fri",
+        hour=settings.FOLLOW_UP_SCHEDULE_HOUR,
+        minute=settings.FOLLOW_UP_SCHEDULE_MINUTE,
+        timezone=settings.FOLLOW_UP_TIMEZONE,
+        id="followup_job",
         replace_existing=True,
     )
     scheduler.start()

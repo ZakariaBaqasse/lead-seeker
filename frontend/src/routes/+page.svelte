@@ -92,6 +92,7 @@
     { value: "replied_won", label: "Reply Won" },
     { value: "replied_lost", label: "Reply Lost" },
     { value: "archived", label: "Archived" },
+    { value: "no_response", label: "No Response" },
   ];
 
   const regionOptions = [

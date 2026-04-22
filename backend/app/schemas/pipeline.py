@@ -24,3 +24,4 @@ class StatsOut(BaseModel):
     replied_won: int = 0
     replied_lost: int = 0
     archived: int = 0
+    no_response: int = 0

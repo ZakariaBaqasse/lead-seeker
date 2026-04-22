@@ -122,6 +122,16 @@ export GNEWS_API_KEY=your-gnews-api-key               # free tier: 100 req/day
 export PIPELINE_SCHEDULE_HOUR=6                        # UTC hour to run daily pipeline
 export PIPELINE_SCHEDULE_MINUTE=0
 
+# --- Follow-up scheduler ---
+export FOLLOW_UP_SCHEDULE_HOUR=8                       # Local hour to run daily follow-up job (default: 8)
+export FOLLOW_UP_SCHEDULE_MINUTE=0                     # Minute offset (default: 0)
+export FOLLOW_UP_TIMEZONE=Africa/Casablanca            # Timezone for scheduler and business-day calc (default: Africa/Casablanca)
+export FOLLOW_UP_BUSINESS_DAYS=3                       # Business days between follow-up touchpoints (default: 3)
+
+# --- Telegram notifications (optional) ---
+export TELEGRAM_BOT_TOKEN=your-telegram-bot-token      # Bot token from @BotFather; leave unset to disable notifications
+export TELEGRAM_CHAT_ID=your-telegram-chat-id          # Chat/channel ID to receive follow-up digests
+
 # --- Frontend (SvelteKit) ---
 export BACKEND_URL=http://localhost:8000               # FastAPI base URL (server-side)
 export APP_PASSWORD=your-basic-auth-password           # HTTP Basic Auth password

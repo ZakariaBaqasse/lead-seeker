@@ -24,4 +24,5 @@ async def get_stats(request: Request, db: AsyncSession = Depends(get_db)):
         replied_won=counts.get(LeadStatus.replied_won.value, 0),
         replied_lost=counts.get(LeadStatus.replied_lost.value, 0),
         archived=counts.get(LeadStatus.archived.value, 0),
+        no_response=counts.get(LeadStatus.no_response.value, 0),
     )

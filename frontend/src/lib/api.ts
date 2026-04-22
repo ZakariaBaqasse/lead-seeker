@@ -94,6 +94,12 @@ export async function regenerateEmail(
   });
 }
 
+export async function markFollowUpSent(id: string): Promise<Lead> {
+  return apiFetch<Lead>(`/api/leads/${id}/follow-ups/mark-sent`, {
+    method: 'POST',
+  });
+}
+
 export async function getStats(): Promise<StatsResponse> {
   return apiFetch<StatsResponse>("/api/stats");
 }
