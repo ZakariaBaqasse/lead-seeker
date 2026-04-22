@@ -64,7 +64,7 @@ async def draft_email(lead_data: dict, profile: dict) -> str | None:
     """Generate a personalized cold outreach email for a lead.
 
     Returns the email text on success, or None if drafting fails after all retries.
-    A None return does NOT prevent the lead from being stored — it is stored with email_draft=NULL.
+    A None return does NOT prevent the lead from being stored, it is stored with email_draft=NULL.
     """
     logger.info(
         "Drafting email for company '%s' with profile '%s'",
