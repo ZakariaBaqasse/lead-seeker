@@ -12,13 +12,23 @@ logger = logging.getLogger(__name__)
 # Funding-tier feeds: already curated for startup funding (only check funding signal)
 # General-tier feeds: broad tech news (require both AI and funding signals)
 RSS_FEEDS = [
+    # General tech — require both AI + funding signal
     ("https://techcrunch.com/feed/", "techcrunch", "general"),
+    (
+        "https://techcrunch.com/category/startups/feed/",
+        "techcrunch_startups",
+        "general",
+    ),
+    ("https://venturebeat.com/feed/", "venturebeat", "general"),
+    ("https://siliconrepublic.com/feed", "siliconrepublic", "general"),
+    # Funding-focused EU/US — only need funding signal (AI filtering delegated to LLM)
     ("https://sifted.eu/feed", "sifted", "funding"),
     ("https://www.eu-startups.com/feed/", "eu_startups", "funding"),
     ("https://tech.eu/feed", "tech_eu", "funding"),
-    ("https://venturebeat.com/feed/", "venturebeat", "general"),
     ("https://techfundingnews.com/feed/", "techfundingnews", "funding"),
     ("https://news.crunchbase.com/feed/", "crunchbase_news", "funding"),
+    ("https://www.maddyness.com/feed/", "maddyness", "funding"),  # French startups
+    ("https://startupsintheopen.com/feed/", "startupsintheopen", "funding"),
 ]
 
 # Expanded AI keywords for broader matching
