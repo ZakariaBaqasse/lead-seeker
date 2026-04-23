@@ -8,6 +8,7 @@ from app.models.lead import Lead
 from app.models.pipeline_run import PipelineRun
 from app.pipeline.sources.serpapi import fetch_serpapi
 from app.pipeline.sources.rss_feeds import fetch_rss_feeds
+from app.pipeline.sources.hn import fetch_hn
 from app.pipeline.sources import dedupe_by_url
 from app.pipeline.extractor import extract_article
 from app.pipeline.fetcher import enrich_article_body
@@ -65,7 +66,9 @@ async def _process_article(
                     company_description=extraction.summary,
                     region=extraction.region,
                     country=extraction.country,
-                    employee_count=enrichment.employee_count if enrichment else extraction.employee_count_estimate,
+                    employee_count=enrichment.employee_count
+                    if enrichment
+                    else extraction.employee_count_estimate,
                     funding_amount=extraction.funding_amount,
                     funding_date=funding_date,
                     funding_round=extraction.funding_round,
@@ -73,7 +76,9 @@ async def _process_article(
                     news_url=article.url,
                     cto_name=enrichment.cto_name if enrichment else None,
                     linkedin_url=enrichment.linkedin_url if enrichment else None,
-                    product_description=enrichment.product_description if enrichment else None,
+                    product_description=enrichment.product_description
+                    if enrichment
+                    else None,
                     tech_stack=enrichment.tech_stack if enrichment else None,
                     status="draft",
                     email_draft=None,
@@ -138,11 +143,12 @@ async def run_pipeline(session: AsyncSession) -> PipelineRun:
         results = await asyncio.gather(
             fetch_serpapi(),
             fetch_rss_feeds(),
+            fetch_hn(),
             return_exceptions=True,
         )
 
         all_articles = []
-        source_names = ["serpapi", "rss_feeds"]
+        source_names = ["serpapi", "rss_feeds", "hackernews"]
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 logger.error("Source %s failed: %s", source_names[i], result)
