@@ -17,6 +17,11 @@ experience:
 projects:
   - name: "ResumAI – Autonomous Career Agent"
     description: "Built a fully autonomous agentic workflow using FastAPI, LangGraph, and MistralAI to automate job application tailoring. Integrated Firecrawl and Tavily to scrape live employer data, reducing tailored application generation time from hours to <5 minutes per application."
+    highlights:
+      - "Multi-Agent Orchestration: Designed a planner-researcher architecture using LangGraph, coordinating specialized subagents with an LLM-as-a-judge feedback loop to iteratively improve output quality before delivery."
+      - "Resilient Tool Layer: Implemented retry mechanisms and graceful failure reporting across all external tool calls (Firecrawl, Tavily), ensuring agent continuity under partial failures."
+      - "LLMOps & Observability: Integrated Langfuse for full agent tracing — tracking latency per node, token consumption per run, and prompt version management across the pipeline."
+      - "Performance: Reduced tailored application generation from hours to <5 minutes per application."
     tags:
       - "LangGraph"
       - "FastAPI"
