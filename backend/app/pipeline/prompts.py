@@ -215,7 +215,7 @@ Field rules:
 - country: full country name (e.g. "United Kingdom")
 - sector: one of GenAI, Other
 - summary: 2-3 sentence description of the company and what they do
-- is_relevant: true only if the article describes a GenAI startup that recently received Pre-Seed, Seed, Series A, Series B, or Series C funding. Set to false for Series D+ rounds, or for well-established scaleups with hundreds of employees (e.g. Anthropic, OpenAI, Cohere, Mistral at scale) — these companies seek full-time employees, not contractors
+- is_relevant: true only if the article describes a GenAI startup that recently received Pre-Seed, Seed, Series A, Series B, or Series C funding AND the company builds AI-powered applications or software products. Set to false if ANY of the following apply: (1) Series D+ rounds, (2) well-established scaleups with hundreds of employees (e.g. Anthropic, OpenAI, Cohere, Mistral at scale) — these seek full-time employees not contractors, (3) AI hardware companies — building chips, accelerators, edge AI hardware, neuromorphic hardware, or any physical compute infrastructure for AI, (4) foundation model / base model developers — companies whose primary product is training or providing a large language model, vision model, or multimodal base model (as opposed to building applications on top of such models)
 - relevance_reason: one sentence explaining why is_relevant is true or false
 
 Example output:
