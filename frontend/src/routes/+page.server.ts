@@ -15,6 +15,7 @@ export const load: PageServerLoad = async ({ url }) => {
   const region = url.searchParams.get("region") ?? undefined;
   const from = url.searchParams.get("from") ?? undefined;
   const to = url.searchParams.get("to") ?? undefined;
+  const search = url.searchParams.get("search") ?? undefined;
   const page = parseInt(url.searchParams.get("page") ?? "1", 10);
   const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);
   const sort_by = url.searchParams.get("sort_by") ?? "created_at";
@@ -27,6 +28,7 @@ export const load: PageServerLoad = async ({ url }) => {
     region,
     from,
     to,
+    search,
     page,
     limit,
     sort_by,
@@ -61,7 +63,7 @@ export const load: PageServerLoad = async ({ url }) => {
     sort_dir,
     stats,
     pipelineStatus,
-    filters: { status, region, from, to },
+    filters: { status, region, from, to, search },
   };
 };
 
@@ -69,7 +71,7 @@ export const actions: Actions = {
   "advance-status": async ({ request }) => {
     const data = await request.formData();
     const id = data.get("id") as string;
-    const status = data.get("status") as Exclude<LeadStatus, 'no_response'>;
+    const status = data.get("status") as Exclude<LeadStatus, "no_response">;
     if (!id || !status) return fail(400, { error: "Missing id or status" });
     try {
       await updateLead(id, { status });

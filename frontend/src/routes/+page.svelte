@@ -21,7 +21,13 @@
   let { data, form }: Props = $props();
 
   let pipelineRunning = $state(false);
-  let activeFilters = $state({ status: "", region: "", from: "", to: "" });
+  let activeFilters = $state({
+    status: "",
+    region: "",
+    from: "",
+    to: "",
+    search: "",
+  });
 
   // Sync filter UI with URL-driven data whenever navigation updates data
   $effect(() => {
@@ -30,6 +36,7 @@
       region: data.filters.region ?? "",
       from: data.filters.from ?? "",
       to: data.filters.to ?? "",
+      search: data.filters.search ?? "",
     };
   });
 
@@ -58,11 +65,12 @@
       region: activeFilters.region,
       from: activeFilters.from,
       to: activeFilters.to,
+      search: activeFilters.search,
     });
   }
 
   function resetFilters() {
-    activeFilters = { status: "", region: "", from: "", to: "" };
+    activeFilters = { status: "", region: "", from: "", to: "", search: "" };
     goto("/", { invalidateAll: true });
   }
 
@@ -155,6 +163,20 @@
   <div
     class="flex flex-wrap items-end gap-3 p-4 bg-bg-subtle border border-border rounded-md"
   >
+    <div class="flex flex-col gap-1">
+      <label for="filter-search" class="text-xs font-medium text-text-secondary"
+        >Company</label
+      >
+      <input
+        id="filter-search"
+        type="search"
+        placeholder="Search by name…"
+        bind:value={activeFilters.search}
+        onkeydown={(e) => e.key === "Enter" && applyFilters()}
+        class="bg-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/30 w-48"
+      />
+    </div>
+
     <div class="flex flex-col gap-1">
       <label for="filter-status" class="text-xs font-medium text-text-secondary"
         >Status</label

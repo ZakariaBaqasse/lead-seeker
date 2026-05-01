@@ -29,6 +29,7 @@ async def list_leads(
     region: Optional[str] = Query(None),
     from_date: Optional[date] = Query(None),
     to_date: Optional[date] = Query(None),
+    search: Optional[str] = Query(None, max_length=200),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -38,6 +39,8 @@ async def list_leads(
         query = query.where(Lead.status == status.value)
     if region:
         query = query.where(Lead.region.ilike(f"%{region}%"))
+    if search:
+        query = query.where(Lead.company_name.ilike(f"%{search}%"))
     if from_date:
         query = query.where(Lead.created_at >= from_date)
     if to_date:
