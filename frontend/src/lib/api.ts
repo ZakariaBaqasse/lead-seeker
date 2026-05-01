@@ -62,6 +62,7 @@ export async function getLeads(
   if (filters.region) params.set("region", filters.region);
   if (filters.from) params.set("from", filters.from);
   if (filters.to) params.set("to", filters.to);
+  if (filters.search) params.set("search", filters.search);
   if (filters.page) params.set("page", String(filters.page));
   if (filters.limit) params.set("limit", String(filters.limit));
   if (filters.sort_by) params.set("sort_by", filters.sort_by);
@@ -96,7 +97,7 @@ export async function regenerateEmail(
 
 export async function markFollowUpSent(id: string): Promise<Lead> {
   return apiFetch<Lead>(`/api/leads/${id}/follow-ups/mark-sent`, {
-    method: 'POST',
+    method: "POST",
   });
 }
 

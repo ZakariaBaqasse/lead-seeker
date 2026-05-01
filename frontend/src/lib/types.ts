@@ -1,4 +1,10 @@
-export type LeadStatus = 'draft' | 'sent' | 'replied_won' | 'replied_lost' | 'archived' | 'no_response';
+export type LeadStatus =
+  | "draft"
+  | "sent"
+  | "replied_won"
+  | "replied_lost"
+  | "archived"
+  | "no_response";
 
 export interface Lead {
   id: string;
@@ -63,10 +69,11 @@ export interface LeadFilters {
   region?: string;
   from?: string;
   to?: string;
+  search?: string;
   page?: number;
   limit?: number;
   sort_by?: string;
-  sort_dir?: 'asc' | 'desc';
+  sort_dir?: "asc" | "desc";
 }
 
 export interface LeadUpdate {
@@ -74,5 +81,5 @@ export interface LeadUpdate {
   cto_email?: string | null;
   linkedin_url?: string | null;
   notes?: string | null;
-  status?: Exclude<LeadStatus, 'no_response'>;
+  status?: Exclude<LeadStatus, "no_response">;
 }
